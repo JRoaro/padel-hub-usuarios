@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate, Outlet } from 'react-router-dom'
 import { Home, Calendar, User, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function LayoutMovil() {
   const navigate = useNavigate()

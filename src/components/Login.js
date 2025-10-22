@@ -32,7 +32,7 @@ const Login = () => {
     
     fetchCSRF()
       .then(response => {
-          fetch(`${baseURL}/login`, {
+          fetch(`${baseURL}/api/login`, {
             method: "POST",
             headers: headers(),
             body: JSON.stringify({
@@ -40,9 +40,11 @@ const Login = () => {
               password: password
             }),
             credentials: "include",
-          }).then(response => {
+          }).then(async (response) => {
               if (response.ok) {
                 localStorage.setItem('loggedIn', 'true');
+                const data = await response.json();
+                localStorage.setItem('user', JSON.stringify(data.user));
                 navigate("/home");
               } else {
                 setError("Las credenciales no coinciden")

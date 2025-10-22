@@ -26,7 +26,6 @@ export default function ReservarCancha() {
 
   const canchas = ['Cancha 1', 'Cancha 2', 'Cancha 3']
 
-  // Horarios en media hora de 7:00 a 23:00
   const generarHorarios = () => {
     const arr = []
     for (let h = 7; h <= 22; h++) {
@@ -48,7 +47,6 @@ export default function ReservarCancha() {
   const [total, setTotal] = useState(0)
   const [metodoPago, setMetodoPago] = useState(null)
 
-  // Calcular total cada vez que cambian horaInicio o horaFin
   useEffect(() => {
     if (horaSeleccionada && horaFin) {
       const indexInicio = horarios.indexOf(horaSeleccionada)
@@ -59,17 +57,16 @@ export default function ReservarCancha() {
   }, [horaSeleccionada, horaFin])
 
   const handleConfirmar = () => {
-    setPaso(3)
+    setPaso(4)
     setTimeout(() => navigate('/home'), 1500)
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 pt-6">
-
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <motion.button
-          onClick={() => navigate(-1)}
+          onClick={() => setPaso(paso > 1 ? paso - 1 : 1)}
           whileTap={{ scale: 0.9 }}
           className="p-2 rounded-xl bg-white shadow-lg hover:shadow-xl transition"
         >
@@ -79,6 +76,7 @@ export default function ReservarCancha() {
       </div>
 
       <AnimatePresence mode="wait">
+
         {/* PASO 1: Selección de Club */}
         {paso === 1 && (
           <motion.div
@@ -116,7 +114,7 @@ export default function ReservarCancha() {
           </motion.div>
         )}
 
-        {/* PASO 2: Cancha, Fecha, Horarios y Pago */}
+        {/* PASO 2: Selección Cancha, Fecha y Hora */}
         {paso === 2 && (
           <motion.div
             key="paso2"
@@ -206,43 +204,114 @@ export default function ReservarCancha() {
               </div>
             )}
 
-            {/* Checkout */}
-            {horaSeleccionada && horaFin && canchaSeleccionada && (
-              <motion.div
-                className="p-4 rounded-2xl shadow-2xl bg-white space-y-3 mt-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+            {canchaSeleccionada && horaSeleccionada && horaFin && (
+              <motion.button
+                onClick={() => setPaso(3)}
+                whileTap={{ scale: 0.97 }}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-2xl mt-4 text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
               >
-                <p className="text-gray-700 font-medium">Resumen de reserva</p>
-                <p>{clubSeleccionado}</p>
-                <p>{canchaSeleccionada}</p>
-                <p>{horaSeleccionada} - {horaFin}</p>
-                <p>Total: ${total}</p>
-
-                <div className="flex gap-3 mt-2">
-                  <button onClick={() => setMetodoPago('Efectivo')} className={`flex-1 py-3 rounded-2xl shadow-lg transition ${metodoPago === 'Efectivo' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}><DollarSign className="inline w-5 h-5 mr-2"/>Efectivo</button>
-                  <button onClick={() => setMetodoPago('Tarjeta')} className={`flex-1 py-3 rounded-2xl shadow-lg transition ${metodoPago === 'Tarjeta' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}><CreditCard className="inline w-5 h-5 mr-2"/>Tarjeta</button>
-                </div>
-
-                {metodoPago && (
-                  <motion.button
-                    onClick={handleConfirmar}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-2xl mt-4 text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
-                  >
-                    Confirmar reserva
-                  </motion.button>
-                )}
-              </motion.div>
+                Siguiente: Resumen
+              </motion.button>
             )}
           </motion.div>
         )}
 
-        {/* PASO 3: Confirmación */}
-        {paso === 3 && (
+        {/* PASO 3: Checkout / Resumen + Método de pago estilo iOS integrado */}
+{paso === 3 && (
+  <motion.div
+    key="paso3"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.4 }}
+    className="space-y-6 pb-24"
+  >
+    {/* Resumen */}
+    <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-2">
+      <p className="text-gray-800 font-semibold text-lg">Resumen de tu reserva</p>
+      <div className="text-gray-700 space-y-1">
+        <p><span className="font-medium">Club:</span> {clubSeleccionado}</p>
+        <p><span className="font-medium">Cancha:</span> {canchaSeleccionada}</p>
+        <p><span className="font-medium">Fecha:</span> {fecha}</p>
+        <p><span className="font-medium">Horario:</span> {horaSeleccionada} - {horaFin}</p>
+        <p><span className="font-medium">Total:</span> ${total}</p>
+      </div>
+    </div>
+
+    {/* Método de pago estilo iOS animado */}
+    <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-3">
+    <p className="text-gray-800 font-bold text-lg">Elige tu método de pago</p>
+    <p className="text-gray-500 text-sm">Selecciona cómo deseas pagar tu reserva</p>
+
+    <div className="flex flex-col gap-3 mt-2">
+        {['Efectivo', 'Tarjeta', 'Transferencia'].map((metodo) => (
+        <motion.button
+            key={metodo}
+            onClick={() => setMetodoPago(metodo)}
+            whileTap={{ scale: 0.97 }}
+            animate={{
+            backgroundColor: metodoPago === metodo ? "#2563EB" : "#F3F4F6",
+            color: metodoPago === metodo ? "#ffffff" : "#1F2937",
+            }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            className="flex items-center justify-between px-4 py-4 rounded-xl font-medium"
+        >
+            <div className="flex items-center gap-3">
+            {metodo === 'Efectivo' && <DollarSign className="w-5 h-5" />}
+            {metodo === 'Tarjeta' && <CreditCard className="w-5 h-5" />}
+            {metodo === 'Transferencia' && <DollarSign className="w-5 h-5" />}
+            <span>{metodo}</span>
+            </div>
+
+            <AnimatePresence>
+            {metodoPago === metodo && (
+                <motion.svg
+                key="check"
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </motion.svg>
+            )}
+            </AnimatePresence>
+        </motion.button>
+        ))}
+    </div>
+    </div>
+
+
+    {/* Botón fijo abajo */}
+    {metodoPago && (
+      <motion.div
+        className="fixed bottom-4 left-0 w-full px-4 md:px-0 flex justify-center z-50"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <motion.button
+          onClick={handleConfirmar}
+          whileTap={{ scale: 0.97 }}
+          className="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
+        >
+          Confirmar reserva
+        </motion.button>
+      </motion.div>
+    )}
+  </motion.div>
+)}
+
+
+
+        {/* PASO 4: Confirmación final */}
+        {paso === 4 && (
           <motion.div
-            key="paso3"
+            key="paso4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
@@ -257,6 +326,7 @@ export default function ReservarCancha() {
             <p className="text-gray-700 font-medium text-lg">Método de pago: {metodoPago}</p>
           </motion.div>
         )}
+
       </AnimatePresence>
     </div>
   )

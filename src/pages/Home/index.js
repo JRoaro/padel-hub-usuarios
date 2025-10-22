@@ -1,29 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CalendarDays, Clock, User, PlusCircle } from 'lucide-react'
+import { CalendarDays, PlusCircle, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 
 const Card = ({ children, className, ...props }) => (
   <motion.div
-    whileHover={{ scale: 1.03, y: -2, boxShadow: '0 15px 25px rgba(0,0,0,0.1)' }}
     whileTap={{ scale: 0.97 }}
-    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-    className={`rounded-2xl shadow-md bg-white ${className}`}
+    transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+    className={`rounded-2xl bg-white/95 backdrop-blur-md ${className}`}
     {...props}
   >
     {children}
   </motion.div>
 )
 
-const CardContent = ({ children, className }) => (
-  <div className={`p-4 ${className}`}>{children}</div>
-)
-
 const Button = ({ children, className, ...props }) => (
   <motion.button
-    whileTap={{ scale: 0.95 }}
-    className={`px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition ${className}`}
+    whileTap={{ scale: 0.94 }}
+    className={`px-4 py-2 rounded-2xl bg-blue-600 text-white font-medium shadow-md transition ${className}`}
     {...props}
   >
     {children}
@@ -32,107 +27,78 @@ const Button = ({ children, className, ...props }) => (
 
 export default function HomeUsuarioPadel() {
   const navigate = useNavigate()
-  const [scrollY, setScrollY] = useState(0)
+  const [diasSemana, setDiasSemana] = useState([])
+  const [user, setUser] = useState(null)
 
   const reservas = [
     { id: 1, cancha: 'Cancha 2', fecha: 'Sábado 19 Oct', hora: '6:00 PM', estado: 'Confirmada' },
     { id: 2, cancha: 'Cancha 1', fecha: 'Martes 22 Oct', hora: '8:00 PM', estado: 'Pendiente' },
   ]
 
-  const [diasSemana, setDiasSemana] = useState([])
+  const recomendaciones = ['La Pista', 'Padel Nainari', 'Sunset Padel', 'DUO Padel']
+  const torneos = [
+    { nombre: 'Torneo Semanal', fecha: '25 Oct', inscritos: 12 },
+    { nombre: 'Duelo de Amigos', fecha: '28 Oct', inscritos: 8 },
+  ]
 
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const ultimosCompañeros = [
+    { id: 1, nombre: 'Carlos', avatar: 'https://i.pravatar.cc/100?img=11', partidos: 3 },
+    { id: 2, nombre: 'Ana', avatar: 'https://i.pravatar.cc/100?img=12', partidos: 2 },
+    { id: 3, nombre: 'Luis', avatar: 'https://i.pravatar.cc/100?img=14', partidos: 5 },
+    { id: 4, nombre: 'María', avatar: 'https://i.pravatar.cc/100?img=15', partidos: 1 },
+  ]
 
   useEffect(() => {
     const hoy = dayjs()
     const dias = Array.from({ length: 7 }, (_, i) => hoy.add(i, 'day'))
     setDiasSemana(dias)
+
+    // Obtener usuario
+    const user = localStorage.getItem('user')
+    if (user) {
+      setUser(JSON.parse(user))
+    }
   }, [])
 
-  // Mini dashboard
-  const totalReservas = reservas.length
-  const confirmadas = reservas.filter(r => r.estado === 'Confirmada').length
-  const pendientes = reservas.filter(r => r.estado === 'Pendiente').length
 
-  const recomendaciones = ['La Pista', 'Padel Nainari', 'Sunset Padel', 'DUO Padel']
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden pb-32">
-      
-      <header className="backdrop-blur-md bg-white/70 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex items-center gap-3"
-        >
-          {/* Imagen de perfil */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-white/70 shadow-sm"
-          >
-            <img
-              src="https://i.pravatar.cc/100?img=13"
-              alt="Perfil"
-              className="w-full h-full object-cover"
-            />
-          </motion.div>
 
-          {/* Texto de saludo */}
+      {/* Header */}
+      <header className="backdrop-blur-lg bg-white/80 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/70 shadow">
+            <img src={user?.foto} alt="Perfil" className="w-full h-full object-cover"/>
+          </div>
           <div className="flex flex-col leading-tight">
             <h2 className="text-lg font-semibold text-gray-900">
-              Hola, <span className="font-bold">Juan</span> 👋
+              Hola, <span className="font-bold">{user?.nombre}</span> 👋
             </h2>
             <p className="text-sm text-gray-500">{dayjs().format('dddd D [de] MMMM')}</p>
           </div>
-        </motion.div>
+        </div>
       </header>
 
-      {/* Botón de nueva reserva fijo arriba */}
-      <div className="px-4 py-2">
+      {/* Botón nueva reserva */}
+      <div className="px-4 py-3">
         <Button className="w-full flex items-center justify-center gap-2" onClick={() => navigate('/reservarCancha')}>
           <PlusCircle className="h-5 w-5" /> Nueva reserva
         </Button>
       </div>
-
-      {/* Mini dashboard */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="p-4 flex justify-between gap-3 overflow-x-auto"
-      >
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
-          <p className="text-xs text-gray-400">Total reservas</p>
-          <p className="text-xl font-bold text-gray-900">{totalReservas}</p>
-        </Card>
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
-          <p className="text-xs text-green-500">Confirmadas</p>
-          <p className="text-xl font-bold text-gray-900">{confirmadas}</p>
-        </Card>
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
-          <p className="text-xs text-yellow-500">Pendientes</p>
-          <p className="text-xl font-bold text-gray-900">{pendientes}</p>
-        </Card>
-      </motion.div>
 
       {/* Calendario horizontal */}
       <div className="p-4 overflow-x-auto flex gap-3">
         {diasSemana.map((dia, idx) => {
           const reservasDia = reservas.filter(r => dayjs(r.fecha, 'dddd D MMM').isSame(dia, 'day'))
           return (
-            <motion.div
+            <div
               key={idx}
-              whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
-              className={`flex flex-col items-center px-3 py-2 rounded-2xl ${reservasDia.length ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'} shadow-md transition`}
+              className={`flex flex-col items-center px-3 py-2 rounded-2xl transition ${reservasDia.length ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'} shadow-md`}
             >
-              <span className="text-xs">{dia.format('ddd')}</span>
-              <span className="text-sm font-semibold">{dia.format('D')}</span>
-            </motion.div>
+              <span className="text-xs font-semibold">{dia.format('ddd')}</span>
+              <span className="text-sm font-bold">{dia.format('D')}</span>
+            </div>
           )
         })}
       </div>
@@ -153,7 +119,7 @@ export default function HomeUsuarioPadel() {
             >
               <Card
                 onClick={() => navigate(`/reservas/${r.id}`)}
-                className="flex items-center justify-between p-3 cursor-pointer bg-white/90 backdrop-blur-sm"
+                className="flex items-center justify-between p-3 cursor-pointer"
               >
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-800 text-sm">{r.cancha}</span>
@@ -168,27 +134,74 @@ export default function HomeUsuarioPadel() {
         </AnimatePresence>
       </div>
 
-      {/* Sección recomendaciones */}
+      {/* Torneos */}
       <div className="py-4">
         <h3 className="text-gray-700 font-semibold mb-2 flex items-center gap-1 px-4">
-          🏟️ Canchas cerca de ti
+          <Trophy className="w-4 h-4" /> Torneos y eventos
         </h3>
-        <div className="flex gap-3 overflow-x-auto pb-2 p-1 -m-1 px-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 px-4">
+          {torneos.map((t, idx) => (
+            <Card key={t.nombre} className="flex-none w-48 rounded-2xl p-3 bg-white/95 backdrop-blur-md cursor-pointer">
+              <h4 className="font-semibold text-gray-800 text-sm">{t.nombre}</h4>
+              <p className="text-xs text-gray-500">{t.fecha}</p>
+              <p className="text-xs text-gray-500">{t.inscritos} inscritos</p>
+              <Button className="mt-2 w-full text-xs py-1" onClick={() => navigate(`/torneos/${encodeURIComponent(t.nombre)}`)}>Inscribirse</Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Jugaste recientemente con */}
+      <div className="py-6 px-4">
+        <h3 className="text-gray-900 font-semibold mb-4 text-lg">🎾 Jugaste recientemente con</h3>
+        <div className="flex gap-4 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
+          {ultimosCompañeros.map((c, idx) => (
+            <motion.div 
+              key={c.id} 
+              className="flex-none snap-center flex flex-col items-center cursor-pointer"
+              initial={{ scale: 0.9, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25, delay: idx * 0.05 }}
+            >
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg">
+                <img 
+                  src={c.avatar} 
+                  alt={c.nombre} 
+                  className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <p className="text-center text-sm font-medium text-gray-900 mt-2">{c.nombre}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Canchas cerca de ti - estilo compacto cuadrado */}
+      <div className="py-4 px-4">
+        <h3 className="text-gray-900 font-semibold mb-3 text-lg">🏟️ Canchas cerca de ti</h3>
+        <div className="flex gap-3 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
           {recomendaciones.map((club, idx) => (
             <motion.div
               key={club}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
-              whileHover={{ scale: 1.05, boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}
-              className="flex-none w-48 rounded-2xl bg-white/90 backdrop-blur-sm p-3 shadow-md cursor-pointer"
-              onClick={() => navigate(`/reservas/nueva?club=${encodeURIComponent(club)}`)}
+              className="flex-none snap-center w-36 rounded-2xl bg-white/95 backdrop-blur-md cursor-pointer p-2 shadow-md flex flex-col justify-between"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05, type: 'spring', stiffness: 300 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <div className="flex flex-col justify-between h-full">
-                <h4 className="font-semibold text-gray-800 text-sm">{club}</h4>
-                <p className="text-xs text-gray-500">A 2 km de ti</p>
-                <Button className="mt-2 w-full text-xs py-1">Reservar ahora</Button>
+              <div className="w-full h-24 bg-gray-200 rounded-xl overflow-hidden">
+                <img
+                  src={`https://picsum.photos/200?random=${idx}`}
+                  alt={club}
+                  className="w-full h-full object-cover"
+                />
               </div>
+              <div className="mt-2 flex flex-col gap-1">
+                <h4 className="text-sm font-semibold text-gray-900">{club}</h4>
+                <p className="text-xs text-gray-500">A 2 km de ti</p>
+              </div>
+              <Button className="mt-2 w-full text-xs py-1">Reservar</Button>
             </motion.div>
           ))}
         </div>
