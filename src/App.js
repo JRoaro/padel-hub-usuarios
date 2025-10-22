@@ -10,6 +10,7 @@ import LayoutMovil from './components/Layout'
 import PerfilUsuario from './pages/Perfil'
 import Configuracion from './pages/Configuracion'
 import Registrar from './components/RegistrarUsuario'
+import ReservarCancha from './pages/ReservarCancha'
 
 const queryClient = new QueryClient()
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/reservaciones" element={<Reservaciones />} />
             <Route path="/perfil" element={<PerfilUsuario />} />
             <Route path="/configuracion" element={<Configuracion />} />
+            <Route path="/reservarCancha" element={<ReservarCancha />} />
           </Route>
           
           <Route path="/registrar" element={<Registrar />} />

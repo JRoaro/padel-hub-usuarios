@@ -63,20 +63,38 @@ export default function HomeUsuarioPadel() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden pb-32">
       
-      {/* Header */}
-      <header className="p-4 bg-white shadow-md flex items-center justify-between sticky top-0 z-50">
-        <div className="flex flex-col">
-          <h2 className="text-lg font-semibold">Hola, Juan 👋</h2>
-          <p className="text-sm text-gray-500">{dayjs().format('dddd D [de] MMMM')}</p>
-        </div>
-        <Button className="bg-gray-200 text-gray-700 hover:bg-gray-300">
-          <User className="h-6 w-6" />
-        </Button>
+      <header className="backdrop-blur-md bg-white/70 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center gap-3"
+        >
+          {/* Imagen de perfil */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-white/70 shadow-sm"
+          >
+            <img
+              src="https://i.pravatar.cc/100?img=13"
+              alt="Perfil"
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+
+          {/* Texto de saludo */}
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Hola, <span className="font-bold">Juan</span> 👋
+            </h2>
+            <p className="text-sm text-gray-500">{dayjs().format('dddd D [de] MMMM')}</p>
+          </div>
+        </motion.div>
       </header>
 
       {/* Botón de nueva reserva fijo arriba */}
       <div className="px-4 py-2">
-        <Button className="w-full flex items-center justify-center gap-2" onClick={() => navigate('/movil/reservar')}>
+        <Button className="w-full flex items-center justify-center gap-2" onClick={() => navigate('/reservarCancha')}>
           <PlusCircle className="h-5 w-5" /> Nueva reserva
         </Button>
       </div>

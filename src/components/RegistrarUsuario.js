@@ -91,7 +91,7 @@ export default function RegistroUsuario() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start px-5 py-8 overflow-hidden">
-      {/* Fondo dinámico premium */}
+      {/* Fondo dinámico */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"
         animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
@@ -157,3 +157,6 @@ export default function RegistroUsuario() {
     </div>
   )
 }
+
+
+
