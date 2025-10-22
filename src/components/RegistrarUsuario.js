@@ -2,27 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Lock, Calendar, Phone } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const Input = ({ icon: Icon, placeholder, type = 'text', value, onChange }) => (
-  <motion.div
-    whileFocus={{ scale: 1.02 }}
-    className="relative w-full rounded-2xl transition-all"
-  >
-    <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="
-        w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
-        text-gray-800 placeholder-gray-400 focus:outline-none 
-        focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
-        transition-all
-      "
-    />
-  </motion.div>
-)
+import { useForm, Controller } from "react-hook-form"
 
 const CardSelector = ({ title, options, selected, onSelect }) => (
   <div>
@@ -62,6 +42,33 @@ const Button = ({ children, ...props }) => (
 )
 
 export default function RegistroUsuario() {
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm()
+
+  
+
+  const InputError = ({ error }) => {
+    if (error.message) {
+      return <p role="alert" className="text-red-500">
+        {error.message}
+      </p>
+    }
+    if (error.type === 'pattern') {
+      return <p role="alert" className="text-red-500">
+        Formato inválido
+      </p>
+    }
+
+    return null
+  }
+
+  const onSubmit = (data) => console.log(data)
+
   const navigate = useNavigate()
   const [registered, setRegistered] = useState(false)
 
@@ -83,11 +90,11 @@ export default function RegistroUsuario() {
   const handleChange = (field) => (e) => setForm({ ...form, [field]: e.target.value })
   const handleSelect = (field) => (value) => setForm({ ...form, [field]: value })
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setRegistered(true)
-    setTimeout(() => navigate('/home'), 1800)
-  }
+  // const handleSubmit = (e) => {
+  //   e.preventDefault()
+  //   setRegistered(true)
+  //   setTimeout(() => navigate('/home'), 1800)
+  // }
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start px-5 py-8 overflow-hidden">
@@ -111,15 +118,129 @@ export default function RegistroUsuario() {
       </motion.div>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-md space-y-5 z-10"
       >
-        <Input icon={User} placeholder="Nombre" value={form.nombre} onChange={handleChange('nombre')} />
-        <Input icon={User} placeholder="Apellido" value={form.apellido} onChange={handleChange('apellido')} />
-        <Input icon={Mail} placeholder="Correo electrónico" type="email" value={form.email} onChange={handleChange('email')} />
-        <Input icon={Lock} placeholder="Contraseña" type="password" value={form.password} onChange={handleChange('password')} />
-        <Input icon={Calendar} placeholder="Fecha de nacimiento" type="date" value={form.fechaNacimiento} onChange={handleChange('fechaNacimiento')} />
-        <Input icon={Phone} placeholder="Teléfono" type="tel" value={form.telefono} onChange={handleChange('telefono')} />
+
+        {/* Input Nombre */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        >
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Nombre"
+            {...register("nombre", { required: "Por favor, ingrese su nombre" })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "
+          />
+        </motion.div>
+        {errors.nombre && <InputError error={errors.nombre} />}
+
+        {/* Input Apellido */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        >
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Apellido"
+            {...register("apellido", { required: "Por favor, ingrese su apellido" })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "
+          />
+        </motion.div>
+        {errors.apellido && <InputError error={errors.apellido} />}
+
+        {/* Input Email */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        > 
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            {...register("email", { required: "Por favor, ingrese su correo electrónico", pattern: /^\S+@\S+$/i })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "
+          />
+        </motion.div>
+        {errors.email && <InputError error={errors.email} />}
+
+        {/* Input Password */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        >
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            {...register("password", { required: "Por favor, ingrese su contraseña" })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "
+          />
+        </motion.div>
+        {errors.password && <InputError error={errors.password} />}
+
+        {/* Input Fecha de nacimiento */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        >
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="date"
+            placeholder="Fecha de nacimiento"
+            {...register("fecha_nacimiento", { required: "Por favor, ingrese su fecha de nacimiento" })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "
+          />
+        </motion.div>
+        {errors.fecha_nacimiento && <InputError error={errors.fecha_nacimiento} />}
+
+        {/* Input Teléfono */}
+        <motion.div
+          whileFocus={{ scale: 1.02 }}
+          className="relative w-full rounded-2xl transition-all"
+        >
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="tel"
+            placeholder="Teléfono"
+            {...register("telefono", { required: "Por favor, ingrese su teléfono" })}
+            className="
+              w-full px-10 py-3 rounded-2xl bg-white/10 focus:bg-white/30 
+              text-gray-800 placeholder-gray-400 focus:outline-none 
+              focus:ring-2 focus:ring-blue-400 focus:ring-opacity-40 
+              transition-all
+            "            
+          />
+        </motion.div>
+        {errors.telefono && <InputError error={errors.telefono} />}
 
         <CardSelector title="Mano dominante" options={['Izquierda', 'Derecha']} selected={form.manoDominante} onSelect={handleSelect('manoDominante')} />
         <CardSelector title="Posición" options={['Drive', 'Revés']} selected={form.posicion} onSelect={handleSelect('posicion')} />
