@@ -5,12 +5,12 @@ import dayjs from 'dayjs'
 import { useNavigate } from 'react-router-dom'
 
 // Imagenes clubes
-import laPista from "/Users/juanj/padel-hub-usuarios/src/assets/img/LaPista.jpg"
-import Nainari from "/Users/juanj/padel-hub-usuarios/src/assets/img/PadelNainari.jpg"
-import Sunset from "/Users/juanj/padel-hub-usuarios/src/assets/img/sunset.jpg"
-import Duo from "/Users/juanj/padel-hub-usuarios/src/assets/img/duoPadel.jpg"
-import PadelPadel from "/Users/juanj/padel-hub-usuarios/src/assets/img/padelpadel.jpg"
-import Paddra from "/Users/juanj/padel-hub-usuarios/src/assets/img/paddra.jpg"
+import laPista from "../../assets/img/LaPista.jpg"
+import Nainari from "../../assets/img/PadelNainari.jpg"
+import Sunset from "../../assets/img/sunset.jpg"
+import Duo from "../../assets/img/duoPadel.jpg"
+import PadelPadel from "../../assets/img/padelpadel.jpg"
+import Paddra from "../../assets/img/paddra.jpg"
 
 export default function ReservarCancha() {
   const navigate = useNavigate()

@@ -70,17 +70,17 @@ export default function ReservasMovil() {
     .slice(0, 5)
 
   return (
-    <div className="flex flex-col min-h-screen bg-white p-4">
+    <div className="flex flex-col min-h-screen bg-white py-4">
 
       {/* Header con filtros */}
-      <header className="flex flex-col gap-3 mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Tus Reservas</h2>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+      <header className="flex flex-col gap-1 mb-4">
+        <h2 className="text-xl font-bold text-gray-900 px-4">Tus Reservas</h2>
+        <div className="flex gap-2 overflow-x-auto pb-2 px-4 py-2">
           {['Todos', 'Reservada', 'EnCurso', 'Terminada', 'Cancelada'].map(opcion => (
             <motion.button
               key={opcion}
               whileHover={{ scale: 1.05 }}
-              animate={{ boxShadow: filtro === opcion ? '0 0 15px rgba(59, 130, 246, 0.5)' : '0 0 0 rgba(0,0,0,0)' }}
+              animate={{ boxShadow: filtro === opcion ? '0 0 8px rgba(59, 130, 246, 0.5)' : '0 0 0 rgba(0,0,0,0)' }}
               className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
                 filtro === opcion
                   ? 'bg-blue-600 text-white border-blue-600 shadow-md'
@@ -102,7 +102,7 @@ export default function ReservasMovil() {
         variants={{
           visible: { transition: { staggerChildren: 0.1 } }
         }}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto px-4 py-2"
       >
         {filtradas.map(r => (
           <ItemReserva

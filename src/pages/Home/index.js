@@ -106,15 +106,15 @@ export default function HomeUsuarioPadel() {
         transition={{ duration: 0.5 }}
         className="p-4 flex justify-between gap-3 overflow-x-auto"
       >
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
           <p className="text-xs text-gray-400">Total reservas</p>
           <p className="text-xl font-bold text-gray-900">{totalReservas}</p>
         </Card>
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
           <p className="text-xs text-green-500">Confirmadas</p>
           <p className="text-xl font-bold text-gray-900">{confirmadas}</p>
         </Card>
-        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+        <Card className="flex-1 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md pt-2">
           <p className="text-xs text-yellow-500">Pendientes</p>
           <p className="text-xl font-bold text-gray-900">{pendientes}</p>
         </Card>
@@ -169,11 +169,11 @@ export default function HomeUsuarioPadel() {
       </div>
 
       {/* Sección recomendaciones */}
-      <div className="p-4">
-        <h3 className="text-gray-700 font-semibold mb-2 flex items-center gap-1">
+      <div className="py-4">
+        <h3 className="text-gray-700 font-semibold mb-2 flex items-center gap-1 px-4">
           🏟️ Canchas cerca de ti
         </h3>
-        <div className="flex gap-3 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-2 p-1 -m-1 px-4">
           {recomendaciones.map((club, idx) => (
             <motion.div
               key={club}
@@ -181,7 +181,7 @@ export default function HomeUsuarioPadel() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
               whileHover={{ scale: 1.05, boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}
-              className="flex-none w-48 rounded-2xl bg-white/90 backdrop-blur-sm p-3 shadow-lg cursor-pointer"
+              className="flex-none w-48 rounded-2xl bg-white/90 backdrop-blur-sm p-3 shadow-md cursor-pointer"
               onClick={() => navigate(`/reservas/nueva?club=${encodeURIComponent(club)}`)}
             >
               <div className="flex flex-col justify-between h-full">

@@ -15,28 +15,28 @@ export default function LayoutMovil() {
       {/* Tab bar */}
       <nav className="fixed bottom-0 w-full bg-white shadow-inner p-2 flex justify-around border-t">
         <button
-          className="flex flex-col items-center text-blue-600 hover:bg-gray-100 rounded-md p-1"
+          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${ window.location.pathname === '/home' ? '!text-blue-600' : ''}`}
           onClick={() => navigate('/home')}
         >
           <Home className="h-5 w-5" />
           <span className="text-[10px]">Inicio</span>
         </button>
         <button
-          className="flex flex-col items-center text-gray-500 hover:bg-gray-100 rounded-md p-1"
+          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${ window.location.pathname === '/reservaciones' ? '!text-blue-600' : ''}`}
           onClick={() => navigate('/reservaciones')}
         >
           <Calendar className="h-5 w-5" />
           <span className="text-[10px]">Reservas</span>
         </button>
         <button
-          className="flex flex-col items-center text-gray-500 hover:bg-gray-100 rounded-md p-1"
+          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${ window.location.pathname === '/perfil' ? '!text-blue-600' : ''}`}
           onClick={() => navigate('/perfil')}
         >
           <User className="h-5 w-5" />
           <span className="text-[10px]">Perfil</span>
         </button>
         <button
-          className="flex flex-col items-center text-gray-500 hover:bg-gray-100 rounded-md p-1"
+          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${ window.location.pathname === '/configuracion' ? '!text-blue-600' : ''}`}
           onClick={() => navigate('/configuracion')}
         >
           <Settings className="h-5 w-5" />

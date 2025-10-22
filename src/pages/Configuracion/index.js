@@ -17,7 +17,7 @@ export default function ConfiguracionPerfilPremium() {
     logros: [
       { nombre: "Torneo local ganador", color: "gold" },
       { nombre: "Ranking club: #3", color: "silver" },
-      { nombre: "Desafío completado: 50 partidos", color: "bronze" }
+      { nombre: "Desafío completado: 50 partidos", color: "blue" }
     ]
   })
 
@@ -42,9 +42,9 @@ export default function ConfiguracionPerfilPremium() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center space-y-2 bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-xl border border-white/20"
+        className="flex flex-col items-center space-y-2 bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-md border border-white/20"
       >
-        <div className="relative w-28 h-28 rounded-full overflow-hidden border border-white/30 shadow-2xl hover:scale-105 transition-transform duration-300">
+        <div className="relative w-28 h-28 rounded-full overflow-hidden border border-white/30 shadow-md hover:scale-105 transition-transform duration-300">
           <User className="h-full w-full text-gray-400" />
           <button className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
             <Camera className="h-4 w-4 text-white" />
@@ -72,7 +72,7 @@ export default function ConfiguracionPerfilPremium() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="space-y-3 bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-xl border border-white/20"
+        className="space-y-3 bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-md border border-white/20"
       >
         <h3 className="font-semibold text-gray-800 mb-2">Preferencias</h3>
         <Select label="Mano dominante" value={usuario.manoDominante} onChange={e => handleChange('manoDominante', e.target.value)} options={['Derecha','Izquierda']} />
@@ -87,7 +87,7 @@ export default function ConfiguracionPerfilPremium() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-xl border border-white/20"
+        className="bg-white/70 backdrop-blur-lg p-4 rounded-2xl shadow-md border border-white/20"
       >
         <h3 className="font-semibold text-gray-800 mb-2">Logros</h3>
         <div className="flex flex-wrap gap-2">
@@ -95,7 +95,7 @@ export default function ConfiguracionPerfilPremium() {
             <motion.span
               key={i}
               whileHover={{ scale: 1.05, y: -2 }}
-              className="px-3 py-1 rounded-full text-xs font-semibold text-white shadow-lg cursor-default"
+              className="px-3 py-1 rounded-full text-xs font-semibold text-white shadow-md cursor-default"
               style={{ backgroundColor: l.color }}
             >
               {l.nombre}
