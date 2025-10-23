@@ -18,6 +18,10 @@ export default function ConfiguracionPerfilPremium() {
     setUser(getLocalUser())
   }, [])
 
+  const optionsCategoria = [
+    '1ra fuerza','2da fuerza','3ra fuerza','4ta fuerza','5ta fuerza','6ta fuerza','7ma fuerza'
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 flex flex-col space-y-4 relative overflow-x-hidden">
       
@@ -102,20 +106,17 @@ export default function ConfiguracionPerfilPremium() {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">{label}</label>
+          <label className="text-xs text-gray-500 mb-1">Categoría</label>
           <select
-            value={value}
-            onChange={onChange}
+            {...register("categoria", { required: "Por favor, seleccione su categoría" })}
+            defaultValue={user?.categoria}
             className="px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 backdrop-blur-sm transition-shadow shadow-sm hover:shadow-md"
           >
-            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            {optionsCategoria.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
         </div>
+ 
 
-
-        <Select label="Categoría" value={user?.categoria}  options={[
-          '1ra fuerza','2da fuerza','3ra fuerza','4ta fuerza','5ta fuerza','6ta fuerza','7ma fuerza'
-        ]} />
       </motion.div>
 
       {/* Preferencias */}
