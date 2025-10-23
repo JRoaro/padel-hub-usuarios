@@ -31,6 +31,8 @@ async function fetchAPI(url, options = {method: "GET"}, multipart = false) {
     }
     const response = await fetch(baseURL + url, requestOptions)
     if (response.status === 401) {
+        localStorage.removeItem('loggedIn')
+        localStorage.removeItem('user')
         window.location.href = '/'
     }   
     return await response.json()

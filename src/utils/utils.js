@@ -17,3 +17,21 @@ const PrivateRoutes = () => {
 };
 
 export default PrivateRoutes;
+
+export const getLocalUser = () => {
+    const user = localStorage.getItem('user');
+    if (user) {
+        return JSON.parse(user);
+    }
+    return null;
+}
+
+export const setLocalUser = (user) => {
+    localStorage.setItem('user', JSON.stringify(user));
+}
+
+export const deleteLocalUser = () => {
+    localStorage.removeItem('loggedIn')
+    localStorage.removeItem('user')
+    window.location.href = '/'
+}

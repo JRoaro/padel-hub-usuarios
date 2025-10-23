@@ -32,7 +32,7 @@ const Login = () => {
     
     fetchCSRF()
       .then(response => {
-          fetch(`${baseURL}/api/login`, {
+          fetch(`${baseURL}/login`, {
             method: "POST",
             headers: headers(),
             body: JSON.stringify({
@@ -110,7 +110,7 @@ const Login = () => {
                   <a className="small text-muted" href="#!">¿Olvidaste tu contraseña?</a>
                   <p className="mb-5 pb-lg-2" style={{color: '#393f81'}}>
                     ¿No tienes una cuenta?  
-                    <a href="#!" style={{color: '#393f81'}}> Registrate aquí</a>
+                    <a className="text-underline cursor-pointer" style={{color: '#393f81'}} onClick={() => navigate("/registrar")}> Registrate aquí</a>
                   </p>
                 </div>
 

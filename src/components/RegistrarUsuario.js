@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { useMutation } from '@tanstack/react-query'
 import UsuariosRepository from '../network/UsuariosRepository'
 import toast from 'react-hot-toast';
+import { fetchCSRF } from "../network/apiConstants";
 
 const CardSelector = ({ title, options, selected, onSelect }) => (
   <div>
@@ -59,7 +60,12 @@ export default function RegistroUsuario() {
   const handleSelect = (field) => (value) => setSelectors({ ...selectors, [field]: value })
 
   const registroMutation = useMutation({
-    mutationFn: (user) => UsuariosRepository.registroCliente(user),
+    mutationFn: async (user) => {
+      await fetchCSRF()
+        
+      return UsuariosRepository.registroCliente(user)
+      
+    },
     onMutate: () => setStatus('loading'),
     onSuccess: (data) => {
       if (data && data.success) {
@@ -230,7 +236,7 @@ export default function RegistroUsuario() {
               </svg>
             </motion.div>
             <p className="mt-4 text-gray-800 font-semibold text-lg">¡Confirmado!</p>
-            <a onClick={() => navigate('/')} className="text-blue-600 underline mt-2">Ir al login</a>
+            <a onClick={() => navigate('/')} className="text-blue-600 underline mt-2 cursor-pointer">Ir al login</a>
           </motion.div>
         )}
       </AnimatePresence>

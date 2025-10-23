@@ -1,26 +1,29 @@
-import React, { useState } from "react";
-import { User } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { User, Settings, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { getLocalUser, setLocalUser } from "../../utils/utils";
+import UsuariosRepository from '../../network/UsuariosRepository';
+import toast from 'react-hot-toast';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import deleteLocalUser from '../../utils/utils';
 
 import Perfil from "../../assets/img/pala_1.png";
+import Loading from '../../components/Loading';
 
 export default function PerfilUsuario() {
+  const navigate = useNavigate();
 
+  const [user, setUser] = useState(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+
+  useEffect(() => {
+    setUser(getLocalUser())
+  }, [])
+
+  // Variable vieja con info por definir
   const [usuario] = useState({
-    nombre: 'Juan Jose Roaro',
-    direccion: 'Ciudad Obregón, Sonora',
-    categoria: '5ta fuerza',
-    foto: Perfil,
-    nivel: "Intermedio",
-    victorias: 42,
-    partidosJugados: 60,
-    porcentajeVictorias: 70,
-    manoDominante: "Derecha",
-    posicion: "Drive",
-    golpeFavorito: "Smash",
-    frecuencia: "3 veces por semana",
-    estiloJuego: "Agresivo",
     logros: [
       { nombre: "Torneo local ganador", color: "#FFD700" },
       { nombre: "Ranking club: #C0C0C0" },
@@ -37,11 +40,11 @@ export default function PerfilUsuario() {
   });
 
   const preferencias = [
-    { icon: "✋", title: "Mano dominante", value: usuario.manoDominante, color: "text-yellow-500" },
-    { icon: "🎾", title: "Posición", value: usuario.posicion, color: "text-blue-500" },
-    { icon: "💥", title: "Golpe favorito", value: usuario.golpeFavorito, color: "text-red-500" },
-    { icon: "📅", title: "Frecuencia", value: usuario.frecuencia, color: "text-green-500" },
-    { icon: "⚡", title: "Estilo de juego", value: usuario.estiloJuego, color: "text-purple-500" },
+    { icon: "✋", title: "Mano dominante", value: user?.mano_dominante, color: "text-yellow-500" },
+    { icon: "🎾", title: "Posición", value: user?.posicion, color: "text-blue-500" },
+    { icon: "💥", title: "Golpe favorito", value: user?.golpe_favorito, color: "text-red-500" },
+    { icon: "📅", title: "Frecuencia", value: user?.frecuencia_padel, color: "text-green-500" },
+    { icon: "⚡", title: "Estilo de juego", value: user?.estilo_juego, color: "text-purple-500" },
   ];
 
   const dataPie = [
@@ -50,8 +53,60 @@ export default function PerfilUsuario() {
   ];
   const COLORS = ["#FACC15", "#E5E7EB"];
 
+  const { status, data, isFetching, dataUpdatedAt } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => {
+      return UsuariosRepository.getPerfil()
+    },
+  })
+
+  if (status === "success" && lastUpdatedAt !== dataUpdatedAt) {
+    setLastUpdatedAt(dataUpdatedAt);
+    setUser(data.usuario)
+    setLocalUser(data.usuario)
+  }
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return UsuariosRepository.logout()
+    },
+    onSuccess: (data) => {
+      if (data && data.success) {
+        deleteLocalUser()
+        navigate('/')
+        return 
+      } 
+
+      const message = data.message || "Ocurrió un error al intentar el logout";
+      toast.error(message);
+    },
+    onError: () => {
+      toast.error("Ocurrió un error al intentar el logout");
+    }
+  })
+
+  const logout = () => {
+    logoutMutation.mutate()
+  }
+
   return (
     <div className="relative bg-white min-h-screen flex flex-col items-center space-y-6 overflow-x-hidden py-5">
+
+      {/* ICONO CONFIGURACION ARRIBA DERECHA */}
+      <button
+        onClick={() => navigate('/configuracion')}
+        className="absolute top-5 right-4 p-2 rounded-full bg-white/80 backdrop-blur-md shadow-md hover:bg-white transition"
+      >
+        <Settings className="h-6 w-6 text-gray-700" />
+      </button>
+
+      {/* Boton logout arriba izquierda */}
+      <button
+        onClick={() => { logout() }}
+        className="absolute top-5 left-4 p-2 rounded-full bg-white/80 backdrop-blur-md shadow-md hover:bg-white transition mt-0"
+      >
+        <LogOut className="h-6 w-6 text-gray-700" />
+      </button>
 
       {/* FOTO DE PERFIL */}
       <motion.div
@@ -60,8 +115,8 @@ export default function PerfilUsuario() {
         transition={{ duration: 0.5 }}
         className="w-28 h-28 rounded-full bg-white backdrop-blur-lg flex items-center justify-center overflow-hidden shadow-lg border border-white/30"
       >
-        {usuario.foto ? (
-          <img src={usuario.foto} alt="Foto perfil" className="w-full h-full object-cover rounded-full" />
+        {user?.foto ? (
+          <img src={user?.foto} alt="Foto perfil" className="w-full h-full object-cover rounded-full" />
         ) : (
           <User className="h-12 w-12 text-gray-400" />
         )}
@@ -74,9 +129,8 @@ export default function PerfilUsuario() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="text-center space-y-1"
       >
-        <h2 className="text-2xl font-bold text-gray-900">{usuario.nombre}</h2>
-        <p className="text-gray-500 text-sm">Categoría: {usuario.categoria}</p>
-        <p className="text-gray-500 text-sm">{usuario.nivel}</p>
+        <h2 className="text-2xl font-bold text-gray-900">{user?.nombre} {user?.apellido}</h2>
+        <p className="text-gray-500 text-sm">Categoría: {user?.categoria}</p>
       </motion.div>
 
       <div className="w-full px-4">
@@ -177,6 +231,11 @@ export default function PerfilUsuario() {
           </div>
         </motion.div>
       </div>
+
+      {/* Animación Loading → Success */}
+      {isFetching && (
+        <Loading />
+      )}
 
     </div>
   )

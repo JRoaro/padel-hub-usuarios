@@ -1,6 +1,12 @@
 import fetchAPI from './apiConstants';
 
 class UsuariosRepository {
+    static async logout() {
+        return await fetchAPI('/logout', {
+            method: "POST"
+        });
+    }
+
     static async getPerfil() {
         return await fetchAPI('/api/cliente/perfil');
     }

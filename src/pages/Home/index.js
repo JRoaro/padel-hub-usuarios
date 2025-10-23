@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CalendarDays, PlusCircle, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
+import { getLocalUser } from '../../utils/utils'
 
 const Card = ({ children, className, ...props }) => (
   <motion.div
@@ -32,7 +33,6 @@ export default function HomeUsuarioPadel() {
 
   const reservas = [
     { id: 1, cancha: 'Cancha 2', fecha: 'Sábado 19 Oct', hora: '6:00 PM', estado: 'Confirmada' },
-    { id: 2, cancha: 'Cancha 1', fecha: 'Martes 22 Oct', hora: '8:00 PM', estado: 'Pendiente' },
   ]
 
   const recomendaciones = ['La Pista', 'Padel Nainari', 'Sunset Padel', 'DUO Padel']
@@ -54,10 +54,7 @@ export default function HomeUsuarioPadel() {
     setDiasSemana(dias)
 
     // Obtener usuario
-    const user = localStorage.getItem('user')
-    if (user) {
-      setUser(JSON.parse(user))
-    }
+    setUser(getLocalUser())
   }, [])
 
 
@@ -118,7 +115,7 @@ export default function HomeUsuarioPadel() {
               transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
             >
               <Card
-                onClick={() => navigate(`/reservas/${r.id}`)}
+                onClick={() => navigate(`/detalleReserva`)}
                 className="flex items-center justify-between p-3 cursor-pointer"
               >
                 <div className="flex flex-col">
