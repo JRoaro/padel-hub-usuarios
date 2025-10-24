@@ -87,7 +87,7 @@ export default function PerfilUsuario() {
 
       <button
         onClick={logout}
-        className="absolute top-5 left-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+        className="absolute top-5 left-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition mt-0"
       >
         <LogOut className="h-6 w-6 text-gray-700" />
       </button>

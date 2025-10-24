@@ -4,6 +4,12 @@ import { CalendarDays, PlusCircle, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 import { getLocalUser } from '../../utils/utils'
+import ReservacionesRepository from '../../network/ReservacionesRepository'
+import { useQuery } from '@tanstack/react-query'
+import Loading from '../../components/Loading'
+import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
+import 'dayjs/locale/es'
+dayjs.locale('es')
 
 const Card = ({ children, className, ...props }) => (
   <motion.div
@@ -31,10 +37,6 @@ export default function HomeUsuarioPadel() {
   const [diasSemana, setDiasSemana] = useState([])
   const [user, setUser] = useState(null)
 
-  const reservas = [
-    { id: 1, cancha: 'Cancha 2', fecha: 'Sábado 19 Oct', hora: '6:00 PM', estado: 'Confirmada' },
-  ]
-
   const recomendaciones = ['La Pista', 'Padel Nainari', 'Sunset Padel', 'DUO Padel']
   const torneos = [
     { nombre: 'Torneo Semanal', fecha: '25 Oct', inscritos: 12 },
@@ -57,7 +59,12 @@ export default function HomeUsuarioPadel() {
     setUser(getLocalUser())
   }, [])
 
+  const { data: homeData, isFetching } = useQuery({
+    queryKey: ['home'],
+    queryFn: () => ReservacionesRepository.getHomeData(),
+  })
 
+  const reservas = homeData?.reservaciones ?? []
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
@@ -106,7 +113,7 @@ export default function HomeUsuarioPadel() {
           <CalendarDays className="h-4 w-4" /> Próximas reservas
         </h3>
         <AnimatePresence>
-          {reservas.map((r, idx) => (
+          {reservas.length > 0 ? reservas.map((r, idx) => (
             <motion.div
               key={r.id}
               initial={{ opacity: 0, x: 50 }}
@@ -115,19 +122,22 @@ export default function HomeUsuarioPadel() {
               transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
             >
               <Card
-                onClick={() => navigate(`/detalleReserva`)}
+                onClick={() => navigate(`/detalleReserva`, { state: r })}
                 className="flex items-center justify-between p-3 cursor-pointer"
               >
                 <div className="flex flex-col">
-                  <span className="font-medium text-gray-800 text-sm">{r.cancha}</span>
-                  <span className="text-xs text-gray-500">{r.fecha} - {r.hora}</span>
+                  <span className="font-medium text-gray-800 text-sm">{r.cancha.nombre}</span>
+                  <span className="text-xs text-gray-500">{dayjs(r.fecha_reserva).format('DD MMM')} - {r.hora_inicio_reserva}</span>
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${r.estado === 'Confirmada' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                  {r.estado}
-                </span>
+                <BadgeEstadoReservacion estado={r.estado} />
               </Card>
             </motion.div>
-          ))}
+          )) :
+            <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
+              <span>No hay reservas disponibles</span>
+              <span>¡Reserva tu primera!</span>
+            </div>
+          }
         </AnimatePresence>
       </div>
 
@@ -203,6 +213,8 @@ export default function HomeUsuarioPadel() {
           ))}
         </div>
       </div>
+
+      {isFetching && <Loading />}
     </div>
   )
 }
