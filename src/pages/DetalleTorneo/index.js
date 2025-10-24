@@ -84,7 +84,7 @@ export default function DetalleTorneo() {
       </div>
 
         {/* Contenido scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 pb-24">
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
 
             {/* Fecha y ubicación */}
             <motion.div 

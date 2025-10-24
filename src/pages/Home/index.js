@@ -60,7 +60,7 @@ export default function HomeUsuarioPadel() {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden pb-32">
+    <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
 
       {/* Header */}
       <header className="backdrop-blur-lg bg-white/80 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start shadow-sm">

@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query'
 import UsuariosRepository from '../network/UsuariosRepository'
 import toast from 'react-hot-toast';
 import { fetchCSRF } from "../network/apiConstants";
+import InputError from './InputError';
 
 const CardSelector = ({ title, options, selected, onSelect }) => (
   <div>
@@ -84,11 +85,12 @@ export default function RegistroUsuario() {
     registroMutation.mutate({ ...data, ...selectors })
   }
 
-  const InputError = ({ error }) => {
-    let message = error?.message || 'Error'
-    if (error?.type === 'pattern') message = 'Formato inválido'
-    return <p className="text-red-500">{message}</p>
-  }
+  const optionsManoDominante = [ 'Derecha','Izquierda' ]
+  const optionsPosicion = [ 'Drive','Revés' ]
+  const optionsGolpeFavorito = [ 'Smash','Volea','Víbora','x4','x3' ]
+  const optionsFrecuencia = [ '1 vez/semana','2-3 veces/semana','4+ veces/semana' ]
+  const optionsEstiloJuego = [ 'Defensivo','Ofensivo','Mixto' ]
+  const optionsCategoria = [ '1ra Fuerza','2da Fuerza','3ra Fuerza','4ta Fuerza','5ta Fuerza','6ta Fuerza','7ma Fuerza' ]
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start px-5 py-8 overflow-hidden">
@@ -185,14 +187,15 @@ export default function RegistroUsuario() {
         </div>
         {errors.telefono && <InputError error={errors.telefono} />}
 
-        {/* Selectores */}
-        <CardSelector title="Mano dominante" options={['Izquierda', 'Derecha']} selected={selectors.mano_dominante} onSelect={handleSelect('mano_dominante')} />
-        <CardSelector title="Posición" options={['Drive', 'Revés']} selected={selectors.posicion} onSelect={handleSelect('posicion')} />
-        <CardSelector title="Golpe favorito" options={['Smash', 'Volea', 'Vibora', 'x4', 'x3']} selected={selectors.golpe_favorito} onSelect={handleSelect('golpe_favorito')} />
-        <CardSelector title="Frecuencia de pádel" options={['1 vez/semana', '2-3 veces/semana', '4+ veces/semana']} selected={selectors.frecuencia_padel} onSelect={handleSelect('frecuencia_padel')} />
-        <CardSelector title="Estilo de juego" options={['Defensivo', 'Ofensivo', 'Mixto']} selected={selectors.estilo_juego} onSelect={handleSelect('estilo_juego')} />
-        <CardSelector title="Categoría" options={['Open', '1ra Fuerza', '2da Fuerza', '3ra Fuerza', '4ta Fuerza', '5ta Fuerza', '6ta Fuerza', '7ma Fuerza']} selected={selectors.categoria} onSelect={handleSelect('categoria')} />
 
+        {/* Selectores */}
+        <CardSelector title="Mano dominante" options={optionsManoDominante} selected={selectors.mano_dominante} onSelect={handleSelect('mano_dominante')} />
+        <CardSelector title="Posición" options={optionsPosicion} selected={selectors.posicion} onSelect={handleSelect('posicion')} />
+        <CardSelector title="Golpe favorito" options={optionsGolpeFavorito} selected={selectors.golpe_favorito} onSelect={handleSelect('golpe_favorito')} />
+        <CardSelector title="Frecuencia de pádel" options={optionsFrecuencia} selected={selectors.frecuencia_padel} onSelect={handleSelect('frecuencia_padel')} />
+        <CardSelector title="Estilo de juego" options={optionsEstiloJuego} selected={selectors.estilo_juego} onSelect={handleSelect('estilo_juego')} />
+        <CardSelector title="Categoría" options={optionsCategoria} selected={selectors.categoria} onSelect={handleSelect('categoria')} />
+  
         <Button type="submit">Registrar usuario</Button>
       </form>
 

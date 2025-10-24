@@ -60,12 +60,6 @@ const ItemReserva = ({ reserva, onClick, onCancel, onRepeat }) => (
       >
         <Trash2 className="w-4 h-4 text-red-600" />
       </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onRepeat(reserva.id) }}
-        className="p-2 rounded-full bg-blue-50 hover:bg-blue-100"
-      >
-        <Repeat className="w-4 h-4 text-blue-600" />
-      </button>
     </div>
   </motion.div>
 )
@@ -88,7 +82,6 @@ export default function ReservasMovil() {
     .sort((a, b) => dayjs(b.fecha + ' ' + b.hora).diff(dayjs(a.fecha + ' ' + a.hora)))
 
   const handleCancel = (id) => alert(`Cancelar reserva ${id}`)
-  const handleRepeat = (id) => alert(`Repetir reserva ${id}`)
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 py-4">
@@ -126,7 +119,6 @@ export default function ReservasMovil() {
               reserva={r}
               onClick={() => navigate(`/reservas/${r.id}`)}
               onCancel={handleCancel}
-              onRepeat={handleRepeat}
             />
           ))}
         </AnimatePresence>
