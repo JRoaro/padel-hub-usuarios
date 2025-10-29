@@ -3,34 +3,62 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, CheckCircle2, CreditCard, DollarSign } from 'lucide-react'
 import dayjs from 'dayjs'
 import { useNavigate } from 'react-router-dom'
-
-// Imagenes clubes
-import laPista from "../../assets/img/LaPista.jpg"
-import Nainari from "../../assets/img/PadelNainari.jpg"
-import Sunset from "../../assets/img/sunset.jpg"
-import Duo from "../../assets/img/duoPadel.jpg"
-import PadelPadel from "../../assets/img/padelpadel.jpg"
-import Paddra from "../../assets/img/paddra.jpg"
+import { useQuery, useMutation } from '@tanstack/react-query'
+import ClubsRepository from '../../network/ClubsRepository'
+import ReservacionesRepository from '../../network/ReservacionesRepository'
+import toast from 'react-hot-toast'
+import Loading from '../../components/Loading'
+import { getLocalUser } from '../../utils/utils'
 
 export default function ReservarCancha() {
   const navigate = useNavigate()
 
-  const clubes = [
-    { nombre: 'La Pista', imagen: laPista },
-    { nombre: 'Padel Nainari', imagen: Nainari },
-    { nombre: 'Sunset Padel', imagen: Sunset },
-    { nombre: 'DUO Padel Park', imagen: Duo },
-    { nombre: 'Padel Padel MX', imagen: PadelPadel },
-    { nombre: 'Paddra', imagen: Paddra },
-  ]
+  const { data: clubs, isFetching: isFetchingClubs } = useQuery({
+    queryKey: ['clubs'],
+    queryFn: () => ClubsRepository.getClubs(),
+  })
+  const clubsData = clubs?.clubs || []
 
-  const canchas = ['Cancha 1', 'Cancha 2', 'Cancha 3']
+  const datosReservacionMutation = useMutation({
+    mutationFn: async (data) => {
+      return await ReservacionesRepository.getDatosCrearReservacion(data)
+    },
+    onSuccess: (data) => {
+      if (!data || !data.success) {
+        toast.error(data.message || "Ocurrió un error al obtener los datos");
+        return
+      }
+    },
+    onError: () => toast.error("Ocurrió un error al obtener los datos"),
+  })
+
+  const canchas = datosReservacionMutation.data?.canchas || []
+  const precioHora = datosReservacionMutation.data?.precio_hora || 0
+  const precioHoraTarde = datosReservacionMutation.data?.precio_hora_tarde || 0
+
+  const confirmarReservacionMutation = useMutation({
+    mutationFn: async (data) => {
+      return await ReservacionesRepository.createReservacion(data)
+    },
+    onSuccess: (data) => {
+      if (!data || !data.success) {
+        toast.error(data.message || "Ocurrió un error al confirmar la reservación");
+        return
+      }
+
+      toast.success("Reservación confirmada")
+      //setPaso(4)
+      navigate('/home')
+    },
+    onError: () => toast.error("Ocurrió un error al confirmar la reservación"),
+  })
 
   const generarHorarios = () => {
     const arr = []
     for (let h = 7; h <= 22; h++) {
-      arr.push(`${h}:00`)
-      arr.push(`${h}:30`)
+      const format = String(h).padStart(2, '0'); 
+      arr.push(`${format}:00`)
+      arr.push(`${format}:30`)
     }
     arr.push('23:00')
     return arr
@@ -41,24 +69,77 @@ export default function ReservarCancha() {
   const [paso, setPaso] = useState(1)
   const [clubSeleccionado, setClubSeleccionado] = useState(null)
   const [canchaSeleccionada, setCanchaSeleccionada] = useState(null)
-  const [horaSeleccionada, setHoraSeleccionada] = useState(null)
+  const [horaInicio, setHoraInicio] = useState(null)
   const [horaFin, setHoraFin] = useState(null)
   const [fecha, setFecha] = useState(dayjs().format('YYYY-MM-DD'))
   const [total, setTotal] = useState(0)
   const [metodoPago, setMetodoPago] = useState(null)
+  const [user, setUser] = useState(getLocalUser())
 
   useEffect(() => {
-    if (horaSeleccionada && horaFin) {
-      const indexInicio = horarios.indexOf(horaSeleccionada)
+    if (horaInicio && horaFin) {
+      const indexInicio = horarios.indexOf(horaInicio)
       const indexFin = horarios.indexOf(horaFin)
       const horasReservadas = (indexFin - indexInicio) * 0.5
-      setTotal(horasReservadas * 250)
+      setTotal(horasReservadas * precioHora)
     }
-  }, [horaSeleccionada, horaFin])
+  }, [horaInicio, horaFin, precioHora])
 
   const handleConfirmar = () => {
-    setPaso(4)
-    setTimeout(() => navigate('/home'), 1500)
+    confirmarReservacionMutation.mutate({
+      club_id: clubSeleccionado.id,
+      numero_cancha: canchaSeleccionada.numero,
+      metodo_pago: metodoPago,
+      nombre_reserva: user?.nombre,
+      fecha_reserva: fecha,
+      hora_inicio_reserva: horaInicio,
+      hora_fin_reserva: horaFin,
+    })
+  }
+
+  const backButton = () => {
+    if (paso == 1) {
+      navigate(-1)
+    }
+    setPaso(paso > 1 ? paso - 1 : 1)
+  }
+
+  const handleClickClub = (club) => {
+    setClubSeleccionado(club)
+    setPaso(2)
+    setHoraInicio(null)
+    setHoraFin(null)
+    setFecha(dayjs().format('YYYY-MM-DD'))
+    setCanchaSeleccionada(null)
+    datosReservacionMutation.mutate({ club_id: club.id })
+  }
+
+  const isLoading = () => {
+    return isFetchingClubs || datosReservacionMutation.isPending || confirmarReservacionMutation.isPending
+  }
+
+  const handleChangeFecha = (fecha) => {
+    setFecha(fecha)
+    setHoraInicio(null)
+    setHoraFin(null)
+    setCanchaSeleccionada(null)
+    datosReservacionMutation.mutate({ club_id: clubSeleccionado.id, fecha_reserva: fecha })
+  }
+
+  const handleChangeHoraInicio = (hora) => {
+    setHoraInicio(hora)
+    setHoraFin(null)
+    setCanchaSeleccionada(null)
+  }
+
+  const handleChangeHoraFin = (hora) => {
+    setHoraFin(hora)
+    datosReservacionMutation.mutate({ 
+      club_id: clubSeleccionado.id, 
+      fecha_reserva: fecha,
+      hora_inicio_reserva: horaInicio,
+      hora_fin_reserva: hora
+    })
   }
 
   return (
@@ -66,7 +147,7 @@ export default function ReservarCancha() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <motion.button
-          onClick={() => setPaso(paso > 1 ? paso - 1 : 1)}
+          onClick={() => backButton()}
           whileTap={{ scale: 0.9 }}
           className="p-2 rounded-xl bg-white shadow-lg hover:shadow-xl transition"
         >
@@ -89,7 +170,7 @@ export default function ReservarCancha() {
           >
             <h3 className="text-gray-700 mb-2 font-medium text-lg">Selecciona un club</h3>
             <div className="grid grid-cols-1 gap-4">
-              {clubes.map((club, idx) => (
+              {clubsData.map((club, idx) => (
                 <motion.div
                   key={club.nombre}
                   whileHover={{ scale: 1.05, y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
@@ -97,7 +178,7 @@ export default function ReservarCancha() {
                   initial={{ opacity: 0, y: 40, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: idx * 0.1, type: 'spring', stiffness: 120, damping: 20 }}
-                  onClick={() => { setClubSeleccionado(club.nombre); setPaso(2) }}
+                  onClick={() => { handleClickClub(club) }}
                   className="relative rounded-3xl overflow-hidden h-44 shadow-lg cursor-pointer"
                 >
                   <img
@@ -124,28 +205,7 @@ export default function ReservarCancha() {
             transition={{ duration: 0.4 }}
             className="space-y-6"
           >
-            <h3 className="text-gray-700 font-medium mb-4 text-lg">{clubSeleccionado} — elige cancha, fecha y hora</h3>
-
-            {/* Canchas */}
-            <div>
-              <p className="text-sm text-gray-500 mb-2">Cancha</p>
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {canchas.map((c) => (
-                  <motion.button
-                    key={c}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
-                      canchaSeleccionada === c
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
-                        : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
-                    }`}
-                    onClick={() => setCanchaSeleccionada(c)}
-                  >
-                    {c}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
+            <h3 className="text-gray-700 font-medium mb-4 text-lg">{clubSeleccionado.nombre} — elige cancha, fecha y hora</h3>
 
             {/* Fecha */}
             <div>
@@ -153,7 +213,7 @@ export default function ReservarCancha() {
               <input
                 type="date"
                 value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                onChange={(e) => handleChangeFecha(e.target.value)}
                 className="w-full p-4 rounded-2xl border border-gray-200 bg-white text-gray-800 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               />
             </div>
@@ -167,11 +227,11 @@ export default function ReservarCancha() {
                     key={h}
                     whileTap={{ scale: 0.95 }}
                     className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
-                      horaSeleccionada === h
+                      horaInicio === h
                         ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
                         : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
                     }`}
-                    onClick={() => { setHoraSeleccionada(h); setHoraFin(null) }}
+                    onClick={() => { handleChangeHoraInicio(h) }}
                   >
                     {h}
                   </motion.button>
@@ -180,12 +240,12 @@ export default function ReservarCancha() {
             </div>
 
             {/* Hora fin */}
-            {horaSeleccionada && (
+            {horaInicio && (
               <div>
                 <p className="text-sm text-gray-500 mb-2">Hora fin</p>
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {horarios
-                    .filter((h, i) => i > horarios.indexOf(horaSeleccionada) && (i - horarios.indexOf(horaSeleccionada)) >= 2)
+                    .filter((h, i) => i > horarios.indexOf(horaInicio) && (i - horarios.indexOf(horaInicio)) >= 2)
                     .map((h) => (
                       <motion.button
                         key={h}
@@ -195,7 +255,7 @@ export default function ReservarCancha() {
                             ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
                             : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
                         }`}
-                        onClick={() => setHoraFin(h)}
+                        onClick={() => handleChangeHoraFin(h)}
                       >
                         {h}
                       </motion.button>
@@ -204,16 +264,39 @@ export default function ReservarCancha() {
               </div>
             )}
 
-            {canchaSeleccionada && horaSeleccionada && horaFin && (
-              <motion.button
-                onClick={() => setPaso(3)}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-2xl mt-4 text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
-              >
-                Siguiente: Resumen
-              </motion.button>
+            {/* Canchas */}
+            {horaFin && (
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Cancha</p>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {canchas.map((c) => (
+                    <motion.button
+                      key={c.nombre}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
+                        canchaSeleccionada?.id === c.id
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
+                          : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
+                      }`}
+                      onClick={() => setCanchaSeleccionada(c)}
+                    >
+                      {c.nombre}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
             )}
-          </motion.div>
+
+              {canchaSeleccionada && horaInicio && horaFin && (
+                <motion.button
+                  onClick={() => setPaso(3)}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-2xl mt-4 text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
+                >
+                  Siguiente: Resumen
+                </motion.button>
+              )}
+            </motion.div>
         )}
 
         {/* PASO 3: Checkout / Resumen + Método de pago estilo iOS integrado */}
@@ -230,10 +313,10 @@ export default function ReservarCancha() {
     <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-2">
       <p className="text-gray-800 font-semibold text-lg">Resumen de tu reserva</p>
       <div className="text-gray-700 space-y-1">
-        <p><span className="font-medium">Club:</span> {clubSeleccionado}</p>
-        <p><span className="font-medium">Cancha:</span> {canchaSeleccionada}</p>
-        <p><span className="font-medium">Fecha:</span> {fecha}</p>
-        <p><span className="font-medium">Horario:</span> {horaSeleccionada} - {horaFin}</p>
+        <p><span className="font-medium">Club:</span> {clubSeleccionado.nombre}</p>
+        <p><span className="font-medium">Cancha:</span> {canchaSeleccionada.nombre}</p>
+        <p><span className="font-medium">Fecha:</span> {dayjs(fecha).format('DD/MM/YYYY')}</p>
+        <p><span className="font-medium">Horario:</span> {horaInicio} - {horaFin}</p>
         <p><span className="font-medium">Total:</span> ${total}</p>
       </div>
     </div>
@@ -321,13 +404,16 @@ export default function ReservarCancha() {
             <CheckCircle2 className="w-28 h-28 text-green-500 mb-2 animate-pulse" />
             <h3 className="text-3xl font-semibold text-gray-800">¡Reserva confirmada!</h3>
             <p className="text-gray-500 text-lg">
-              {clubSeleccionado}, {canchaSeleccionada}, {horaSeleccionada} - {horaFin}
+              {clubSeleccionado.nombre}, {canchaSeleccionada.nombre}, {horaInicio} - {horaFin}
             </p>
             <p className="text-gray-700 font-medium text-lg">Método de pago: {metodoPago}</p>
+            <a onClick={() => navigate('/home')} className="text-blue-600 underline mt-2 cursor-pointer">Ir al home</a>
           </motion.div>
         )}
 
       </AnimatePresence>
+
+      {isLoading() && <Loading />}
     </div>
   )
 }

@@ -21,10 +21,9 @@ const ItemReserva = ({ reserva, onClick, onCancel = null, onRepeat }) => (
     className="relative flex justify-between items-start p-3 bg-white/70 backdrop-blur-xl rounded-3xl mb-3 cursor-pointer border border-white/20 hover:border-blue-300"
   >
     <div className="flex flex-col gap-1 w-full">
-      {/* TODO: agregar club */}
       <div className="flex items-start gap-1 justify-between w-full">
         <div>
-          <span className="font-semibold text-gray-800 text-lg">Club</span><br/>
+          <span className="font-semibold text-gray-800 text-lg">{reserva.club.nombre}</span><br/>
           <span className="text-gray-500 text-sm">{reserva.cancha.nombre}</span>
         </div>
         <div className="flex gap-2 items-center">
@@ -137,7 +136,7 @@ export default function ReservasMovil() {
         </AnimatePresence>
       </motion.div>
 
-      {(isFetching || cancelarReservacionMutation.isLoading) && <Loading />}
+      {(isFetching || cancelarReservacionMutation.isPending) && <Loading />}
     </div>
   )
 }

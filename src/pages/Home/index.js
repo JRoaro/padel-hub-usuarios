@@ -37,7 +37,6 @@ export default function HomeUsuarioPadel() {
   const [diasSemana, setDiasSemana] = useState([])
   const [user, setUser] = useState(null)
 
-  const recomendaciones = ['La Pista', 'Padel Nainari', 'Sunset Padel', 'DUO Padel']
   const torneos = [
     { nombre: 'Torneo Semanal', fecha: '25 Oct', inscritos: 12 },
     { nombre: 'Duelo de Amigos', fecha: '28 Oct', inscritos: 8 },
@@ -65,6 +64,7 @@ export default function HomeUsuarioPadel() {
   })
 
   const reservas = homeData?.reservaciones ?? []
+  const clubs = homeData?.clubs ?? []
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
@@ -113,23 +113,23 @@ export default function HomeUsuarioPadel() {
           <CalendarDays className="h-4 w-4" /> Próximas reservas
         </h3>
         <AnimatePresence>
-          {reservas.length > 0 ? reservas.map((r, idx) => (
+          {reservas.length > 0 ? reservas.map((reservacion, idx) => (
             <motion.div
-              key={r.id}
+              key={reservacion.id}
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
               transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
             >
               <Card
-                onClick={() => navigate(`/detalleReserva`, { state: r })}
+                onClick={() => navigate(`/detalleReserva`, { state: reservacion })}
                 className="flex items-center justify-between p-3 cursor-pointer"
               >
                 <div className="flex flex-col">
-                  <span className="font-medium text-gray-800 text-sm">{r.cancha.nombre}</span>
-                  <span className="text-xs text-gray-500">{dayjs(r.fecha_reserva).format('DD MMM')} - {r.hora_inicio_reserva}</span>
+                  <span className="font-medium text-gray-800 text-sm">{reservacion.club.nombre} - {reservacion.cancha.nombre}</span>
+                  <span className="text-xs text-gray-500">{dayjs(reservacion.fecha_reserva).format('DD MMM')} - {reservacion.hora_inicio_reserva}</span>
                 </div>
-                <BadgeEstadoReservacion estado={r.estado} />
+                <BadgeEstadoReservacion estado={reservacion.estado} />
               </Card>
             </motion.div>
           )) :
@@ -188,7 +188,7 @@ export default function HomeUsuarioPadel() {
       <div className="py-4 px-4">
         <h3 className="text-gray-900 font-semibold mb-3 text-lg">🏟️ Canchas cerca de ti</h3>
         <div className="flex gap-3 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
-          {recomendaciones.map((club, idx) => (
+          {clubs.map((club, idx) => (
             <motion.div
               key={club}
               className="flex-none snap-center w-36 rounded-2xl bg-white/95 backdrop-blur-md cursor-pointer p-2 shadow-md flex flex-col justify-between"
@@ -199,13 +199,13 @@ export default function HomeUsuarioPadel() {
             >
               <div className="w-full h-24 bg-gray-200 rounded-xl overflow-hidden">
                 <img
-                  src={`https://picsum.photos/200?random=${idx}`}
-                  alt={club}
+                  src={club.imagen}
+                  alt={club.nombre}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="mt-2 flex flex-col gap-1">
-                <h4 className="text-sm font-semibold text-gray-900">{club}</h4>
+                <h4 className="text-sm font-semibold text-gray-900">{club.nombre}</h4>
                 <p className="text-xs text-gray-500">A 2 km de ti</p>
               </div>
               <Button className="mt-2 w-full text-xs py-1">Reservar</Button>

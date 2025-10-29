@@ -12,6 +12,7 @@ const DetalleReserva = () => {
   const reserva = location.state || {}
   const navigate = useNavigate();
   
+  console.log(reserva)
 
   const [showToast, setShowToast] = useState(false);
 
@@ -30,7 +31,7 @@ const DetalleReserva = () => {
         <BackButton />
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}  className="flex items-center justify-between w-full">
           <h2 className="text-2xl font-semibold text-gray-900 tracking-tight m-0">Tu Reserva</h2>
-          <BadgeEstadoReservacion estado={reserva.estado} />
+          <BadgeEstadoReservacion estado={reserva?.estado} />
         </motion.div>
       </div>
 
@@ -43,14 +44,14 @@ const DetalleReserva = () => {
           <Clock className="mr-2" /> {reserva.hora_inicio_reserva} - {reserva.hora_fin_reserva}
         </p>
         <p className="flex items-center">
-          <User className="mr-2" /> {reserva.cancha.nombre}
+          <User className="mr-2" /> {reserva?.cancha?.nombre}
         </p>
       </motion.div>
 
       {/* Jugadores */}
       <h3 className="text-lg font-semibold mb-3 mt-4">Jugadores</h3>
       <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-3">
-        {reserva.usuarios.map(jugador => (
+        {reserva?.usuarios?.map(jugador => (
           <motion.div
             key={jugador.id}
             whileHover={{ scale: jugador.nombre ? 1.02 : 1.05 }}
@@ -76,7 +77,7 @@ const DetalleReserva = () => {
             )}
           </motion.div>
         ))}
-        {reserva.usuarios.length < maxJugadores && (
+        {reserva?.usuarios?.length < maxJugadores && (
           <motion.div
             className="flex items-center justify-center w-full text-blue-700 font-semibold cursor-pointer mt-3"
             whileHover={{ scale: 1.05 }}

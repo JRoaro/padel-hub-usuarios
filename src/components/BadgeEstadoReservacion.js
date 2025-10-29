@@ -18,9 +18,9 @@ const BadgeEstadoReservacion = ({ estado }) => {
       animate={{ scale: 1 }}
       whileHover={{ scale: 1.15 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${e.color}`}
+      className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${e?.color}`}
     >
-      <span>{e.icon}</span>
+      <span>{e?.icon}</span>
       {estado}
     </motion.span>
   )
