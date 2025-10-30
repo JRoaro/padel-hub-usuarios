@@ -30,7 +30,7 @@ export default function LayoutMovil() {
         </button>
         <button
           className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${window.location.pathname === '/perfil' ? '!text-blue-600' : ''}`}
-          onClick={() => navigate('/perfil')}
+          onClick={() => navigate('/perfil', { replace: true })}
         >
           <User className="h-5 w-5" />
           <span className="text-[10px]">Perfil</span>

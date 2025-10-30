@@ -7,7 +7,10 @@ class UsuariosRepository {
         });
     }
 
-    static async getPerfil() {
+    static async getPerfil($id = null) {
+        if ($id) {
+            return await fetchAPI(`/api/cliente/perfil/${$id}`);
+        }
         return await fetchAPI('/api/cliente/perfil');
     }
 
