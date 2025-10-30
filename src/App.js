@@ -14,6 +14,8 @@ import ReservarCancha from './pages/ReservarCancha'
 import DetalleReserva from './pages/DetalleReserva'
 import Torneos from './pages/Torneos'
 import DetalleTorneo from './pages/DetalleTorneo'
+import ConfirmarEquipoTorneo from './pages/ConfirmarEquipoTorneo'
+import EstatusEquipoTorneo from './pages/EstatusEquipoTorneo'
 
 //Rutas privadas 
 import PrivateRoutes from './utils/utils'
@@ -41,8 +43,11 @@ function App() {
               <Route path="/reservarCancha" element={<ReservarCancha />} />
               <Route path="/detalleReserva" element={<DetalleReserva />} />
               <Route path="/torneos" element={<Torneos />} />
-              <Route path="/detalleTorneo" element={<DetalleTorneo />} />
+              <Route path="/estatusEquipoTorneo" element={<EstatusEquipoTorneo />} />
             </Route>
+
+            <Route path="/detalleTorneo" element={<DetalleTorneo />} />
+            <Route path="/confirmarEquipoTorneo" element={<ConfirmarEquipoTorneo />} />
           </Route>
           
         </Routes>

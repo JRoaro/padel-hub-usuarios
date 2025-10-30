@@ -217,94 +217,94 @@ export default function ReservarCancha() {
         )}
 
         {/* PASO 3: Checkout / Resumen + Método de pago estilo iOS integrado */}
-{paso === 3 && (
-  <motion.div
-    key="paso3"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    transition={{ duration: 0.4 }}
-    className="space-y-6 pb-24"
-  >
-    {/* Resumen */}
-    <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-2">
-      <p className="text-gray-800 font-semibold text-lg">Resumen de tu reserva</p>
-      <div className="text-gray-700 space-y-1">
-        <p><span className="font-medium">Club:</span> {clubSeleccionado}</p>
-        <p><span className="font-medium">Cancha:</span> {canchaSeleccionada}</p>
-        <p><span className="font-medium">Fecha:</span> {fecha}</p>
-        <p><span className="font-medium">Horario:</span> {horaSeleccionada} - {horaFin}</p>
-        <p><span className="font-medium">Total:</span> ${total}</p>
-      </div>
-    </div>
-
-    {/* Método de pago estilo iOS animado */}
-    <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-3">
-    <p className="text-gray-800 font-bold text-lg">Elige tu método de pago</p>
-    <p className="text-gray-500 text-sm">Selecciona cómo deseas pagar tu reserva</p>
-
-    <div className="flex flex-col gap-3 mt-2">
-        {['Efectivo', 'Tarjeta', 'Transferencia'].map((metodo) => (
-        <motion.button
-            key={metodo}
-            onClick={() => setMetodoPago(metodo)}
-            whileTap={{ scale: 0.97 }}
-            animate={{
-            backgroundColor: metodoPago === metodo ? "#2563EB" : "#F3F4F6",
-            color: metodoPago === metodo ? "#ffffff" : "#1F2937",
-            }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className="flex items-center justify-between px-4 py-4 rounded-xl font-medium"
-        >
-            <div className="flex items-center gap-3">
-            {metodo === 'Efectivo' && <DollarSign className="w-5 h-5" />}
-            {metodo === 'Tarjeta' && <CreditCard className="w-5 h-5" />}
-            {metodo === 'Transferencia' && <DollarSign className="w-5 h-5" />}
-            <span>{metodo}</span>
+        {paso === 3 && (
+          <motion.div
+            key="paso3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-6 pb-24"
+          >
+            {/* Resumen */}
+            <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-2">
+              <p className="text-gray-800 font-semibold text-lg">Resumen de tu reserva</p>
+              <div className="text-gray-700 space-y-1">
+                <p><span className="font-medium">Club:</span> {clubSeleccionado}</p>
+                <p><span className="font-medium">Cancha:</span> {canchaSeleccionada}</p>
+                <p><span className="font-medium">Fecha:</span> {fecha}</p>
+                <p><span className="font-medium">Horario:</span> {horaSeleccionada} - {horaFin}</p>
+                <p><span className="font-medium">Total:</span> ${total}</p>
+              </div>
             </div>
 
-            <AnimatePresence>
-            {metodoPago === metodo && (
-                <motion.svg
-                key="check"
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            {/* Método de pago estilo iOS animado */}
+            <div className="p-5 rounded-xl bg-white/90 backdrop-blur-sm space-y-3">
+              <p className="text-gray-800 font-bold text-lg">Elige tu método de pago</p>
+              <p className="text-gray-500 text-sm">Selecciona cómo deseas pagar tu reserva</p>
+
+              <div className="flex flex-col gap-3 mt-2">
+                  {['Efectivo', 'Tarjeta', 'Transferencia'].map((metodo) => (
+                  <motion.button
+                      key={metodo}
+                      onClick={() => setMetodoPago(metodo)}
+                      whileTap={{ scale: 0.97 }}
+                      animate={{
+                      backgroundColor: metodoPago === metodo ? "#2563EB" : "#F3F4F6",
+                      color: metodoPago === metodo ? "#ffffff" : "#1F2937",
+                      }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                      className="flex items-center justify-between px-4 py-4 rounded-xl font-medium"
+                  >
+                      <div className="flex items-center gap-3">
+                      {metodo === 'Efectivo' && <DollarSign className="w-5 h-5" />}
+                      {metodo === 'Tarjeta' && <CreditCard className="w-5 h-5" />}
+                      {metodo === 'Transferencia' && <DollarSign className="w-5 h-5" />}
+                      <span>{metodo}</span>
+                      </div>
+
+                      <AnimatePresence>
+                      {metodoPago === metodo && (
+                          <motion.svg
+                          key="check"
+                          className="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                          >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </motion.svg>
+                      )}
+                      </AnimatePresence>
+                  </motion.button>
+                  ))}
+              </div>
+            </div>
+
+
+            {/* Botón fijo abajo */}
+            {metodoPago && (
+              <motion.div
+                className="fixed bottom-4 left-0 w-full px-4 md:px-0 flex justify-center z-50"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <motion.button
+                  onClick={handleConfirmar}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
                 >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </motion.svg>
+                  Confirmar reserva
+                </motion.button>
+              </motion.div>
             )}
-            </AnimatePresence>
-        </motion.button>
-        ))}
-    </div>
-    </div>
-
-
-    {/* Botón fijo abajo */}
-    {metodoPago && (
-      <motion.div
-        className="fixed bottom-4 left-0 w-full px-4 md:px-0 flex justify-center z-50"
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        <motion.button
-          onClick={handleConfirmar}
-          whileTap={{ scale: 0.97 }}
-          className="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
-        >
-          Confirmar reserva
-        </motion.button>
-      </motion.div>
-    )}
-  </motion.div>
-)}
+          </motion.div>
+        )}
 
 
 
@@ -326,7 +326,6 @@ export default function ReservarCancha() {
             <p className="text-gray-700 font-medium text-lg">Método de pago: {metodoPago}</p>
           </motion.div>
         )}
-
       </AnimatePresence>
     </div>
   )

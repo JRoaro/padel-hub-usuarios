@@ -231,9 +231,10 @@ export default function DetalleTorneo() {
                 <motion.button
                     className="flex-1 bg-blue-500 text-white py-3 rounded-2xl transition font-semibold flex items-center justify-center"
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => alert('Te has unido al torneo!')}
+                    onClick={() => navigate('/confirmarEquipoTorneo')}
                 >
                     <Trophy className="mr-2 h-5 w-5"/> Unirse
+
                 </motion.button>
             </motion.div>
 
