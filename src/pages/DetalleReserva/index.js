@@ -5,7 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion';
 import BackButton from '../../components/BackButton';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es'
+import utc from 'dayjs/plugin/utc'
+import tz from 'dayjs/plugin/timezone'
 
+dayjs.extend(utc)
+dayjs.extend(tz)
+dayjs.locale('es')
 
 const DetalleReserva = () => {
   const location = useLocation()
@@ -38,7 +44,7 @@ const DetalleReserva = () => {
       {/* Detalles de reserva */}
       <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }} className="space-y-3 mb-6 mt-6">
         <p className="flex items-center">
-          <Calendar className="mr-2" /> {dayjs(reserva.fecha_reserva).format('DD/MM/YYYY')}
+          <Calendar className="mr-2" /> {dayjs.tz(reserva.fecha_reserva).format('DD/MM/YYYY')}
         </p>
         <p className="flex items-center">
           <Clock className="mr-2" /> {reserva.hora_inicio_reserva} - {reserva.hora_fin_reserva}

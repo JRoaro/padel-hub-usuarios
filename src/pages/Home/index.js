@@ -9,6 +9,11 @@ import { useQuery } from '@tanstack/react-query'
 import Loading from '../../components/Loading'
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
 import 'dayjs/locale/es'
+import utc from 'dayjs/plugin/utc'
+import tz from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(tz)
 dayjs.locale('es')
 
 const Card = ({ children, className, ...props }) => (
@@ -127,7 +132,7 @@ export default function HomeUsuarioPadel() {
               >
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-800 text-sm">{reservacion.club.nombre} - {reservacion.cancha.nombre}</span>
-                  <span className="text-xs text-gray-500">{dayjs(reservacion.fecha_reserva).format('DD MMM')} - {reservacion.hora_inicio_reserva}</span>
+                  <span className="text-xs text-gray-500">{dayjs.tz(reservacion.fecha_reserva).format('DD MMM')} - {reservacion.hora_inicio_reserva}</span>
                 </div>
                 <BadgeEstadoReservacion estado={reservacion.estado} />
               </Card>
@@ -171,7 +176,7 @@ export default function HomeUsuarioPadel() {
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25, delay: idx * 0.05 }}
             >
-              <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg">
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 <img 
                   src={c.avatar} 
                   alt={c.nombre} 

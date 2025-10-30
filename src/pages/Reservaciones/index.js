@@ -9,6 +9,11 @@ import Loading from '../../components/Loading'
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
 import toast from 'react-hot-toast'
 import { getLocalUser } from '../../utils/utils'
+import utc from 'dayjs/plugin/utc'
+import tz from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(tz)
 
 const ItemReserva = ({ reserva, onClick, onCancel = null, onRepeat }) => (
   <motion.div
@@ -41,7 +46,7 @@ const ItemReserva = ({ reserva, onClick, onCancel = null, onRepeat }) => (
       <div className="flex items-center gap-3 text-gray-500 text-xs mt-1 justify-between w-full">
         <div className="flex gap-1 mt-1">
           <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" /> {dayjs(reserva.fecha_reserva).format('DD MMM')}
+            <Calendar className="h-3 w-3" /> {dayjs.tz(reserva.fecha_reserva).format('DD MMM')}
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" /> {reserva.hora_inicio_reserva} - {reserva.hora_fin_reserva}

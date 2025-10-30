@@ -226,10 +226,10 @@ export default function ReservarCancha() {
                   <motion.button
                     key={h}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
+                    className={`px-5 py-3 rounded-2xl shadow-md border transition-all duration-300 font-medium ${
                       horaInicio === h
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
-                        : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-800 border-gray-200'
                     }`}
                     onClick={() => { handleChangeHoraInicio(h) }}
                   >
@@ -250,10 +250,10 @@ export default function ReservarCancha() {
                       <motion.button
                         key={h}
                         whileTap={{ scale: 0.95 }}
-                        className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
+                        className={`px-5 py-3 rounded-2xl shadow-md border transition-all duration-300 font-medium ${
                           horaFin === h
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
-                            : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-800 border-gray-200'
                         }`}
                         onClick={() => handleChangeHoraFin(h)}
                       >
@@ -273,10 +273,10 @@ export default function ReservarCancha() {
                     <motion.button
                       key={c.nombre}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-5 py-3 rounded-2xl shadow-lg border transition-all duration-300 font-medium ${
+                      className={`px-5 py-3 rounded-2xl shadow-md border transition-all duration-300 font-medium ${
                         canchaSeleccionada?.id === c.id
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
-                          : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-800 border-gray-200'
                       }`}
                       onClick={() => setCanchaSeleccionada(c)}
                     >
