@@ -9,6 +9,10 @@ class ReservacionesRepository {
         return await fetchAPI('/api/cliente/reservaciones');
     }
 
+    static async getReservacion(id) {
+        return await fetchAPI(`/api/cliente/reservaciones/${id}`);
+    }
+
     static async getDatosCrearReservacion(data) {
         return await fetchAPI('/api/cliente/reservaciones/create',
             {
@@ -28,6 +32,12 @@ class ReservacionesRepository {
     static async cancelarReservacion(id) {
         return await fetchAPI(`/api/cliente/reservaciones/${id}`, {
             method: "DELETE"
+        });
+    }
+
+    static async unirseReservacion(id) {
+        return await fetchAPI(`/api/cliente/reservaciones/${id}/unirse`, {
+            method: "POST"
         });
     }
 }

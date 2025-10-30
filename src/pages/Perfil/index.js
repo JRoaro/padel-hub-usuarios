@@ -9,25 +9,38 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import deleteLocalUser from '../../utils/utils';
 import Loading from '../../components/Loading';
+import { useSearchParams } from 'react-router-dom';
+import BackButton from "../../components/BackButton";
 
 export default function PerfilUsuario() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userId = searchParams.get('id');
+  const isMyProfile = !userId || userId === user?.id;
+  console.log("isMyProfile", isMyProfile);
 
   useEffect(() => {
-    setUser(getLocalUser());
-  }, []);
+    if (isMyProfile) {
+      setUser(getLocalUser());
+    } 
+  }, [isMyProfile]);
 
   const { status, data, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['user'],
-    queryFn: () => UsuariosRepository.getPerfil(),
+    queryFn: () => UsuariosRepository.getPerfil(userId),
   });
 
   if (status === "success" && lastUpdatedAt !== dataUpdatedAt) {
+    //actualizar banderita de tiempo
     setLastUpdatedAt(dataUpdatedAt);
+    //actualizar usuario
     setUser(data.usuario);
-    setLocalUser(data.usuario);
+    //actualizar usuario guardado en memoria persistente si
+    if (isMyProfile) {
+      setLocalUser(data.usuario);
+    }
   }
 
   const logoutMutation = useMutation({
@@ -44,6 +57,10 @@ export default function PerfilUsuario() {
   });
 
   const logout = () => logoutMutation.mutate();
+
+  const isLoading = () => {
+    return ( isFetching ) || logoutMutation.isPending
+  }
 
   const preferencias = [
     { icon: "✋", title: "Mano dominante", value: user?.mano_dominante, color: "text-yellow-500" },
@@ -78,19 +95,30 @@ export default function PerfilUsuario() {
     <div className="relative bg-gradient-to-b from-gray-50 to-white min-h-screen flex flex-col items-center space-y-8 overflow-x-hidden py-5">
 
       {/* Botones superiores */}
-      <button
-        onClick={() => navigate('/configuracion')}
-        className="absolute top-5 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
-      >
-        <Settings className="h-6 w-6 text-gray-700" />
-      </button>
+      {isMyProfile && (
+        <button
+          onClick={() => navigate('/configuracion')}
+          className="absolute top-5 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+        >
+          <Settings className="h-6 w-6 text-gray-700" />
+        </button>
+      )}
 
-      <button
-        onClick={logout}
-        className="absolute top-5 left-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition mt-0"
-      >
-        <LogOut className="h-6 w-6 text-gray-700" />
-      </button>
+      {isMyProfile && (
+        <button
+          onClick={logout}
+          className="absolute top-5 left-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition mt-0"
+        >
+          <LogOut className="h-6 w-6 text-gray-700" />
+        </button>
+      )}
+
+      {!isMyProfile && (
+        <div className="absolute top-5 left-4 p-2 mt-0">
+        <BackButton />
+        </div>
+      )}
+
 
       {/* Foto */}
       <motion.div
@@ -203,7 +231,7 @@ export default function PerfilUsuario() {
         </div>
       </section>
 
-      {isFetching && <Loading />}
+      {isLoading() && <Loading />}
     </div>
   );
 }

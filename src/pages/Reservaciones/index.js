@@ -128,7 +128,7 @@ export default function ReservasMovil() {
         className="flex-1 overflow-y-auto px-4 py-2"
       >
         <AnimatePresence>
-          {filtradas.map(r => (
+          {filtradas.length > 0 ? filtradas.map(r => (
             <ItemReserva
               key={r.id}
               reserva={r}
@@ -137,7 +137,11 @@ export default function ReservasMovil() {
                 ( (r.estado !== 'Cancelado' && r.estado !== 'Finalizado') && r.usuarios.find(u => u.id == user?.id && u.owner) ) ? handleCancel : null
               }
             />
-          ))}
+          )) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
+              <span>No hay reservaciones para mostrar</span>
+            </div>
+          )}
         </AnimatePresence>
       </motion.div>
 

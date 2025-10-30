@@ -267,15 +267,17 @@ export default function ConfiguracionPerfil() {
           {errors.estilo_juego && <InputError error={errors.estilo_juego} />}
         </motion.div>
 
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">Logro preferido</label>
-          <select
-            {...register("logro", { required: "Por favor, seleccione su logro preferido" })}
-            className="px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 backdrop-blur-sm transition-shadow shadow-sm hover:shadow-md"
-          >
-            {optionsLogros.map(opt => <option key={opt.id} value={opt.id}>{opt.nombre}</option>)}
-          </select> 
-        </div>
+        {optionsLogros.length > 0 && (
+          <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">Logro preferido</label>
+            <select
+              {...register("logro")}
+              className="px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 backdrop-blur-sm transition-shadow shadow-sm hover:shadow-md"
+            >
+              {optionsLogros.map(opt => <option key={opt.id} value={opt.id}>{opt.nombre}</option>)}
+            </select> 
+          </div>
+        )}
         {errors.logro && <InputError error={errors.logro} />}
 
         <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl flex items-center justify-center font-semibold shadow-sm">

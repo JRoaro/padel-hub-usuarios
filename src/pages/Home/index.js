@@ -47,13 +47,6 @@ export default function HomeUsuarioPadel() {
     { nombre: 'Duelo de Amigos', fecha: '28 Oct', inscritos: 8 },
   ]
 
-  const ultimosCompañeros = [
-    { id: 1, nombre: 'Carlos', avatar: 'https://i.pravatar.cc/100?img=11', partidos: 3 },
-    { id: 2, nombre: 'Ana', avatar: 'https://i.pravatar.cc/100?img=12', partidos: 2 },
-    { id: 3, nombre: 'Luis', avatar: 'https://i.pravatar.cc/100?img=14', partidos: 5 },
-    { id: 4, nombre: 'María', avatar: 'https://i.pravatar.cc/100?img=15', partidos: 1 },
-  ]
-
   useEffect(() => {
     const hoy = dayjs()
     const dias = Array.from({ length: 7 }, (_, i) => hoy.add(i, 'day'))
@@ -70,14 +63,15 @@ export default function HomeUsuarioPadel() {
 
   const reservas = homeData?.reservaciones ?? []
   const clubs = homeData?.clubs ?? []
+  const jugadoresRecientes = homeData?.jugadores_recientes ?? []
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
 
       {/* Header */}
-      <header className="backdrop-blur-lg bg-white/80 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start shadow-sm">
+      <header className="backdrop-blur-lg bg-white/80 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start">
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/70 shadow">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/70">
             <img src={user?.foto} alt="Perfil" className="w-full h-full object-cover"/>
           </div>
           <div className="flex flex-col leading-tight">
@@ -120,7 +114,7 @@ export default function HomeUsuarioPadel() {
         <AnimatePresence>
           {reservas.length > 0 ? reservas.map((reservacion, idx) => (
             <motion.div
-              key={reservacion.id}
+              key={`reservacion-${reservacion.id}`}
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -139,7 +133,7 @@ export default function HomeUsuarioPadel() {
             </motion.div>
           )) :
             <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
-              <span>No hay reservas disponibles</span>
+              <span>No hay reservaciones disponibles</span>
               <span>¡Reserva tu primera!</span>
             </div>
           }
@@ -167,23 +161,25 @@ export default function HomeUsuarioPadel() {
       <div className="py-6 px-4">
         <h3 className="text-gray-900 font-semibold mb-4 text-lg">🎾 Jugaste recientemente con</h3>
         <div className="flex gap-4 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
-          {ultimosCompañeros.map((c, idx) => (
+          {jugadoresRecientes.length === 0 && <p className="text-gray-500 text-sm">No has jugado con nadie recientemente</p>}
+          {jugadoresRecientes.map((jugador, idx) => (
             <motion.div 
-              key={c.id} 
+              key={`jugador-${jugador.id}`}
               className="flex-none snap-center flex flex-col items-center cursor-pointer"
               initial={{ scale: 0.9, opacity: 0.6 }}
               animate={{ scale: 1, opacity: 1 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25, delay: idx * 0.05 }}
+              onClick={() => navigate("/perfil?id=" + jugador.id)}
             >
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 <img 
-                  src={c.avatar} 
-                  alt={c.nombre} 
+                  src={jugador.foto} 
+                  alt={jugador.nombre} 
                   className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
                 />
               </div>
-              <p className="text-center text-sm font-medium text-gray-900 mt-2">{c.nombre}</p>
+              <p className="text-center text-sm font-medium text-gray-900 mt-2">{jugador.nombre}</p>
             </motion.div>
           ))}
         </div>
@@ -195,7 +191,7 @@ export default function HomeUsuarioPadel() {
         <div className="flex gap-3 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
           {clubs.map((club, idx) => (
             <motion.div
-              key={club}
+              key={`club-${club.id}`}
               className="flex-none snap-center w-36 rounded-2xl bg-white/95 backdrop-blur-md cursor-pointer p-2 shadow-md flex flex-col justify-between"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
