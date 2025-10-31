@@ -17,7 +17,7 @@ const Loading = () => {
             <motion.div
               className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mb-4"
               animate={{ rotate: 360 }} 
-              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+              transition={{ repeat: Infinity, ease: 'linear' }}
             />
             <p className="mt-2 text-gray-800 font-semibold text-lg">Cargando...</p>
           </motion.div>

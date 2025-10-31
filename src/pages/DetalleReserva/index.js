@@ -1,160 +1,202 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, User, CheckCircle, Share2, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Calendar, Clock, MapPin, Plus, CloudSun } from 'lucide-react';
+import { motion } from 'framer-motion';
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion';
 import BackButton from '../../components/BackButton';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
 import ReservacionesRepository from '../../network/ReservacionesRepository';
 import Loading from '../../components/Loading';
 import { getLocalUser } from '../../utils/utils';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
-import 'dayjs/locale/es'
-import utc from 'dayjs/plugin/utc'
-import tz from 'dayjs/plugin/timezone'
+import 'dayjs/locale/es';
+dayjs.locale('es');
 
-dayjs.extend(utc)
-dayjs.extend(tz)
-dayjs.locale('es')
+const Progress = ({ value }) => (
+  <div className="w-[85%] mt-6">
+    <p className="text-sm text-gray-600 mb-2">Progreso de ocupación</p>
+    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${value}%` }}
+        transition={{ duration: 0.6 }}
+        className="h-3 bg-[#007aff] rounded-full"
+      />
+    </div>
+    <p className="text-xs text-gray-500 mt-1">{value}% ocupado</p>
+  </div>
+);
+
+const ClimaActual = ({ ciudad }) => {
+  const [clima, setClima] = useState(null);
+  useEffect(() => {
+    if (!ciudad) return;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=27.48&longitude=-109.93&current_weather=true`)
+      .then(res => res.json())
+      .then(data => setClima(data.current_weather))
+      .catch(() => {});
+  }, [ciudad]);
+
+  if (!clima) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+      className="flex items-center gap-2 mt-4 text-gray-700">
+      <CloudSun className="w-5 h-5 text-yellow-500" />
+      <span className="text-sm font-medium">{clima.temperature}°C en {ciudad}</span>
+    </motion.div>
+  );
+};
+
+const AvatarStack = ({ usuarios = [], max = 4, ownerId }) => {
+  const placeholders = Array.from({ length: Math.max(0, max - usuarios.length) });
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+      className="flex flex-col items-center justify-center mt-4">
+      <div className="flex -space-x-3 items-center">
+        {usuarios.slice(0, max).map((u, index) => {
+          const isOwner = u.owner || u.id === ownerId;
+          return (
+            <motion.div key={u.id} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.1 }} className="relative">
+              <img
+                src={u.foto || `/api/avatar/${u.id}`}
+                alt={u.nombre}
+                onError={(e) => (e.target.src = '/images/default-avatar.png')}
+                className={`w-14 h-14 rounded-full object-cover shadow-sm ${
+                  isOwner ? 'ring-4 ring-yellow-400 animate-pulse' : 'ring-2 ring-white'
+                }`}
+              />
+              {isOwner && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-yellow-400 text-lg">👑</span>
+              )}
+            </motion.div>
+          );
+        })}
+
+        {placeholders.map((_, i) => (
+          <motion.div key={i} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: i * 0.1 }} className="w-14 h-14 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-sm shadow-sm">
+            <Plus className="w-4 h-4" />
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const ActionBar = ({ isOwner, userHasReservacion, handleInvite, handleJoin, handleCompartirWhatsApp, openMaps }) => (
+  <div className="w-full mt-6 pb-6 flex flex-col items-center bg-transparent">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+      className="w-[90%] flex flex-col gap-3 sm:flex-row sm:gap-4">
+      {isOwner ? (
+        <motion.button onClick={handleInvite} whileTap={{ scale: 0.97 }}
+          className="flex-1 py-3 rounded-full bg-[#007aff] text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+          Invitar jugadores
+        </motion.button>
+      ) : !userHasReservacion ? (
+        <motion.button onClick={handleJoin} whileTap={{ scale: 0.97 }}
+          className="flex-1 py-3 rounded-full bg-[#007aff] text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+          Unirme a la reservación
+        </motion.button>
+      ) : (
+        <div className="flex-1 py-3 rounded-full bg-gray-100 text-gray-600 text-sm font-medium flex items-center justify-center">
+          Ya estás en la reservación
+        </div>
+      )}
+
+      <motion.button onClick={handleCompartirWhatsApp} whileTap={{ scale: 0.97 }}
+        className="flex-1 py-3 rounded-full bg-green-500 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+        Compartir por WhatsApp
+      </motion.button>
+
+      <motion.button onClick={openMaps} whileTap={{ scale: 0.97 }}
+        className="flex-1 py-3 rounded-full bg-gray-800 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+        Ver en mapas
+      </motion.button>
+    </motion.div>
+  </div>
+);
 
 const DetalleReserva = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const location = useLocation()
-  const reservaLocation = location.state || {}
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const reservaLocation = location.state || {};
   const navigate = useNavigate();
-  const [user, setUser] = useState(getLocalUser())
+  const [user] = useState(getLocalUser());
+  const reservaId = reservaLocation?.id || searchParams.get('id');
 
-  const reservaId = reservaLocation?.id || searchParams.get('id')
-  
   const { data: reservaData, isFetching, refetch } = useQuery({
     queryKey: ['reserva', reservaId],
     queryFn: () => ReservacionesRepository.getReservacion(reservaId),
-  })
+    enabled: !!reservaId,
+  });
 
-  const reserva = reservaData?.reservacion || reservaLocation || {}
+  const reserva = reservaData?.reservacion || reservaLocation || {};
+  const maxJugadores = reserva?.max_jugadores || 4;
 
-  const maxJugadores = 4
-  
-  const isOwner = reserva?.usuarios?.some(u => u.id == user?.id && u.owner)
-  const userHasReservacion = reserva?.usuarios?.some(u => u.id == user?.id)
+  const isOwner = reserva?.usuarios?.some(u => u.id == user?.id && u.owner);
+  const userHasReservacion = reserva?.usuarios?.some(u => u.id == user?.id);
 
-  const unirseReservacionMutation = useMutation({
-    mutationFn: async (id) => {
-      return await ReservacionesRepository.unirseReservacion(id)
-    },
-    onSuccess: (data) => {
-      if (!data || !data.success) {
-        toast.error(data.message || "Ocurrió un error al unirte a la reservación");
-        return
-      }
+  const porcentajeOcupacion = Math.round(((reserva.usuarios?.length || 0) / maxJugadores) * 100);
 
-      toast.success("¡Te has unido a la reservación!")
-      refetch()
-    },
-    onError: () => toast.error("Ocurrió un error al unirte a la reservación"),
-  })
-
-  const handleUnirseReservacion = () => {
-    unirseReservacionMutation.mutate(reserva.id)
-  }
-
-  const handleInvitar = () => {
-    const url = window.location.origin + window.location.pathname;
-    navigator.clipboard.writeText(`${url}?id=${reserva.id}`);
-    toast.success("¡Invitación copiada al portapapeles!");
+  const handleCompartirWhatsApp = () => {
+    const texto = `Voy a jugar en ${reserva.club?.nombre} el ${dayjs(reserva.fecha_reserva).format('DD/MM/YYYY')} a las ${reserva.hora_inicio_reserva}. ¿Te unes? 😎`;
+    const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
   };
 
-  const isLoading = () => {
-    return (!reserva.id && isFetching) || unirseReservacionMutation.isPending
-  }
+  const openMaps = () => {
+    const q = encodeURIComponent(reserva.club?.direccion || reserva.club?.nombre || '');
+    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+  };
 
+  if (isFetching) return <Loading />;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col p-6 text-gray-800">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+    <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }} className="w-full min-h-screen flex flex-col justify-between bg-white text-gray-900">
+      
+      <div className="w-full flex justify-between items-center px-6 pt-6">
         <BackButton />
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}  className="flex items-center justify-between w-full">
-          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight m-0">Tu Reserva</h2>
-          <BadgeEstadoReservacion estado={reserva?.estado} />
-        </motion.div>
+        <BadgeEstadoReservacion estado={reserva.estado} />
       </div>
 
-      {/* Detalles de reserva */}
-      <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }} className="space-y-3 mb-6 mt-6">
-        <p className="">
-          Club: &nbsp;<span className="font-semibold">{reserva?.club?.nombre}</span>
-          <br/>
-          {reserva?.club?.direccion}
-        </p>
-        <p className="flex items-center">
-          <Calendar className="mr-2" /> {dayjs.tz(reserva.fecha_reserva).format('DD/MM/YYYY')}
-        </p>
-        <p className="flex items-center">
-          <Clock className="mr-2" /> {reserva.hora_inicio_reserva} - {reserva.hora_fin_reserva}
-        </p>
-        <p className="flex items-center">
-          <User className="mr-2" /> {reserva?.cancha?.nombre}
-        </p>
-      </motion.div>
+      <div className="flex-1 overflow-y-auto px-8 mt-4 text-center">
+        <motion.img src={reserva.club?.imagen || '/images/club-placeholder.png'} onError={(e) => (e.target.style.display = 'none')}
+          alt="Club" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
+          className="w-full h-48 rounded-2xl object-cover mb-6 shadow-sm" />
 
-      {/* Jugadores */}
-      <h3 className="text-lg font-semibold mb-3 mt-4">Jugadores</h3>
-      <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-3">
-        {reserva?.usuarios?.map(jugador => (
-          <motion.div
-            key={jugador.id}
-            whileHover={{ scale: jugador.nombre ? 1.02 : 1.05 }}
-            className={`flex items-center justify-between p-3 rounded-xl bg-gray-50`}
-          >
-            {(
-              <div className="flex items-center">
-                <img src={jugador.foto} alt={jugador.nombre} className="w-12 h-12 rounded-full mr-4 border border-gray-200" />
-                <div>
-                  <span className="font-medium me-2">{jugador.nombre}</span>
-                  {jugador.owner && (
-                    <motion.span
-                      className="mt-1 inline-block text-xs px-2 py-1 rounded-full bg-green-100 text-green-800"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      Dueño
-                    </motion.span>
-                  )}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </motion.div>
+        <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-gray-900">{reserva.club?.nombre || 'Club desconocido'}</h1>
+        <p className="text-sm text-gray-500 mt-1">{reserva.club?.direccion || 'Dirección no disponible'}</p>
 
-      {isOwner && (
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="mt-8 w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl flex items-center justify-center font-semibold shadow-sm"
-          onClick={() => handleInvitar()}
-        >
-          <Share2 className="mr-2" /> Compartir Reservación
-        </motion.button>
-      )}
+        <ClimaActual ciudad={reserva.club?.nombre || 'Ciudad Obregón'} />
 
-      {!isOwner && !userHasReservacion && (
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="mt-8 w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl flex items-center justify-center font-semibold shadow-sm"
-          onClick={() => handleUnirseReservacion()}
-        >
-          <Share2 className="mr-2" /> Unirme a la Reservación
-        </motion.button>
-      )}
+        <div className="w-full flex justify-center items-center gap-10 mt-6">
+          <div className="flex flex-col items-center">
+            <Calendar className="text-[#007aff] mb-1" />
+            <p className="text-xs text-gray-500">Fecha</p>
+            <p className="font-medium">{reserva.fecha_reserva && dayjs(reserva.fecha_reserva).isValid() ? dayjs(reserva.fecha_reserva).format('DD/MM/YYYY') : '-'}</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <Clock className="text-[#007aff] mb-1" />
+            <p className="text-xs text-gray-500">Hora</p>
+            <p className="font-medium">{reserva.hora_inicio_reserva || '-'}</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <MapPin className="text-[#007aff] mb-1" />
+            <p className="text-xs text-gray-500">Cancha</p>
+            <p className="font-medium">{reserva.cancha?.nombre || '-'}</p>
+          </div>
+        </div>
 
-      {isLoading() && <Loading />}
-    </div>
+        <AvatarStack usuarios={reserva.usuarios || []} max={maxJugadores} ownerId={reserva?.usuarios?.find(u => u.owner)?.id} />
+        <Progress value={porcentajeOcupacion} />
+
+        <ActionBar isOwner={isOwner} userHasReservacion={userHasReservacion} handleInvite={() => toast('Invitar')} handleJoin={() => toast('Unirse')} handleCompartirWhatsApp={handleCompartirWhatsApp} openMaps={openMaps} />
+      </div>
+    </motion.div>
   );
 };
 
