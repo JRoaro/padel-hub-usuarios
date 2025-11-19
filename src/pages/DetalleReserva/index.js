@@ -106,15 +106,18 @@ const ActionBar = ({ isOwner, userHasReservacion, handleInvite, handleJoin, hand
         </div>
       )}
 
-      <motion.button onClick={handleCompartirWhatsApp} whileTap={{ scale: 0.97 }}
-        className="flex-1 py-3 rounded-full bg-green-500 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
-        Compartir por WhatsApp
-      </motion.button>
-
-      <motion.button onClick={openMaps} whileTap={{ scale: 0.97 }}
-        className="flex-1 py-3 rounded-full bg-gray-800 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
-        Ver en mapas
-      </motion.button>
+      {isOwner && (
+        <motion.button onClick={handleCompartirWhatsApp} whileTap={{ scale: 0.97 }}
+          className="flex-1 py-3 rounded-full bg-green-500 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+          Compartir por WhatsApp
+        </motion.button>
+      )}
+      {isOwner && (
+        <motion.button onClick={openMaps} whileTap={{ scale: 0.97 }}
+          className="flex-1 py-3 rounded-full bg-gray-800 text-white text-sm font-medium shadow-sm hover:shadow-md transition">
+          Ver en mapas
+        </motion.button>
+      )}
     </motion.div>
   </div>
 );
@@ -136,10 +139,40 @@ const DetalleReserva = () => {
   const reserva = reservaData?.reservacion || reservaLocation || {};
   const maxJugadores = reserva?.max_jugadores || 4;
 
-  const isOwner = reserva?.usuarios?.some(u => u.id == user?.id && u.owner);
-  const userHasReservacion = reserva?.usuarios?.some(u => u.id == user?.id);
-
   const porcentajeOcupacion = Math.round(((reserva.usuarios?.length || 0) / maxJugadores) * 100);
+
+  const isOwner = reserva?.usuarios?.some(u => u.id == user?.id && u.owner)
+  const userHasReservacion = reserva?.usuarios?.some(u => u.id == user?.id)
+
+  const unirseReservacionMutation = useMutation({
+    mutationFn: async (id) => {
+      return await ReservacionesRepository.unirseReservacion(id)
+    },
+    onSuccess: (data) => {
+      if (!data || !data.success) {
+        toast.error(data.message || "Ocurrió un error al unirte a la reservación");
+        return
+      }
+
+      toast.success("¡Te has unido a la reservación!")
+      refetch()
+    },
+    onError: () => toast.error("Ocurrió un error al unirte a la reservación"),
+  })
+
+  const handleUnirseReservacion = () => {
+    unirseReservacionMutation.mutate(reserva.id)
+  }
+
+  const handleInvitar = () => {
+    const url = window.location.origin + window.location.pathname;
+    navigator.clipboard.writeText(`${url}?id=${reserva.id}`);
+    toast.success("¡Invitación copiada al portapapeles!");
+  };
+
+  const isLoading = () => {
+    return (!reserva.id && isFetching) || unirseReservacionMutation.isPending
+  }
 
   const handleCompartirWhatsApp = () => {
     const texto = `Voy a jugar en ${reserva.club?.nombre} el ${dayjs(reserva.fecha_reserva).format('DD/MM/YYYY')} a las ${reserva.hora_inicio_reserva}. ¿Te unes? 😎`;
@@ -152,7 +185,7 @@ const DetalleReserva = () => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
   };
 
-  if (isFetching) return <Loading />;
+  if (isLoading()) return <Loading />;
 
   return (
     <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }}
@@ -194,7 +227,7 @@ const DetalleReserva = () => {
         <AvatarStack usuarios={reserva.usuarios || []} max={maxJugadores} ownerId={reserva?.usuarios?.find(u => u.owner)?.id} />
         <Progress value={porcentajeOcupacion} />
 
-        <ActionBar isOwner={isOwner} userHasReservacion={userHasReservacion} handleInvite={() => toast('Invitar')} handleJoin={() => toast('Unirse')} handleCompartirWhatsApp={handleCompartirWhatsApp} openMaps={openMaps} />
+        <ActionBar isOwner={isOwner} userHasReservacion={userHasReservacion} handleInvite={handleInvitar} handleJoin={handleUnirseReservacion} handleCompartirWhatsApp={handleCompartirWhatsApp} openMaps={openMaps} />
       </div>
     </motion.div>
   );

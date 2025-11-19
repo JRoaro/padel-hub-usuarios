@@ -1,7 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Users, CreditCard, Trophy, Droplets, ShieldCheck, Wallet, Banknote, CreditCard as CardIcon } from 'lucide-react';
+import BackButton from '../../components/BackButton'
+import TorneosRepository from '../../network/TorneosRepository'
+import Loading from '../../components/Loading'
+import { useMutation } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 
 const ConfirmarEquipoTorneo = () => {
   const [equipo, setEquipo] = useState('');
@@ -11,43 +17,51 @@ const ConfirmarEquipoTorneo = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const costoInscripcion = 1000;
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { id } = location.state || {};
+
+  const unirseTorneoMutation = useMutation({
+    mutationFn: async (data) => {
+      return await TorneosRepository.unirseTorneo(id, data)
+    },
+    onSuccess: (data) => {
+      if (!data || !data.success) {
+        toast.error(data.message || "Ocurrió un error al unirte a al torneo");
+        return
+      }
+
+      toast.success("¡Te has unido al torneo!")
+      navigate('/EstatusEquipoTorneo', { state: { equipo, metodoPago } });
+    },
+    onError: () => toast.error("Ocurrió un error al unirte al torneo"),
+  })
 
   const handleConfirmar = async () => {
-  if (!equipo.trim() || !metodoPago) {
-    setShowTooltip(true);
-    setTimeout(() => setShowTooltip(false), 1500);
-    return;
-  }
-
-  if (metodoPago === 'tarjeta') {
-    try {
-      const response = await fetch('http://localhost:4000/crear-preferencia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cantidad: costoInscripcion, equipo }),
-      });
-      const data = await response.json();
-      window.location.href = data.init_point; // Abrir Mercado Pago
-      return;
-    } catch (error) {
-      console.error('Error creando preferencia:', error);
-      alert('No se pudo iniciar el pago. Intenta de nuevo.');
+    if (!equipo.trim() || !metodoPago) {
       return;
     }
-  }
 
-  // Confirmación local
-  setConfirmado(true);
-  setTimeout(() => {
-    setShowToast(true);
-    setConfirmado(false);
+    //Que rollo con esto?
+    if (metodoPago === 'tarjeta') {
+      try {
+        const response = await fetch('http://localhost:4000/crear-preferencia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cantidad: costoInscripcion, equipo }),
+        });
+        const data = await response.json();
+        window.location.href = data.init_point; // Abrir Mercado Pago
+        return;
+      } catch (error) {
+        console.error('Error creando preferencia:', error);
+        alert('No se pudo iniciar el pago. Intenta de nuevo.');
+        return;
+      }
+    }
 
-    // Redirigir a la página de estatus del equipo
-    navigate('/EstatusEquipoTorneo', { state: { equipo, metodoPago } });
-  }, 1200);
-
-  setTimeout(() => setShowToast(false), 3000);
-};
+    unirseTorneoMutation.mutate({ nombre: equipo })
+  };
 
 
   const metodos = [
@@ -59,14 +73,11 @@ const ConfirmarEquipoTorneo = () => {
   const isBotonActivo = equipo.trim() && metodoPago;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col p-6 text-gray-800 relative">
+    <div className="min-h-screen bg-white flex flex-col px-4 py-6 text-gray-800 relative">
       {/* Botón Volver */}
-      <button
-        onClick={() => navigate('/detalleTorneo')}
-        className="absolute top-5 left-5 bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-full shadow-sm transition"
-      >
-        <ArrowLeft size={20} />
-      </button>
+      <div className="w-full flex justify-between items-center">
+        <BackButton />
+      </div>
 
       {/* Header */}
       <motion.div
@@ -84,7 +95,7 @@ const ConfirmarEquipoTorneo = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-gray-50 rounded-2xl shadow-inner space-y-5"
+        className="bg-gray-50 rounded-2xl shadow-inner space-y-5 p-3"
       >
         {/* Nombre del equipo */}
         <div>
@@ -117,9 +128,9 @@ const ConfirmarEquipoTorneo = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 onClick={() => setMetodoPago(m.id)}
-                className={`flex flex-col items-center justify-center px-6 py-4 rounded-2xl shadow-lg border transition-all duration-300 font-medium min-w-[110px] ${
+                className={`flex flex-col items-center justify-center px-6 py-4 rounded-2xl shadow-md border transition-all duration-300 font-medium min-w-[110px] ${
                   metodoPago === m.id
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-xl'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                     : 'bg-white text-gray-800 border-gray-200 hover:shadow-md'
                 }`}
               >

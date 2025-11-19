@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CalendarDays, PlusCircle, Trophy } from 'lucide-react'
+import { CalendarDays, PlusCircle, Trophy, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 import { getLocalUser } from '../../utils/utils'
 import ReservacionesRepository from '../../network/ReservacionesRepository'
+
 import { useQuery } from '@tanstack/react-query'
 import Loading from '../../components/Loading'
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
@@ -42,13 +43,8 @@ export default function HomeUsuarioPadel() {
   const [diasSemana, setDiasSemana] = useState([])
   const [user, setUser] = useState(null)
 
-  const torneos = [
-    { nombre: 'Torneo Semanal', fecha: '25 Oct', inscritos: 12 },
-    { nombre: 'Duelo de Amigos', fecha: '28 Oct', inscritos: 8 },
-  ]
-
   useEffect(() => {
-    const hoy = dayjs()
+    const hoy = dayjs.tz()
     const dias = Array.from({ length: 7 }, (_, i) => hoy.add(i, 'day'))
     setDiasSemana(dias)
 
@@ -64,6 +60,7 @@ export default function HomeUsuarioPadel() {
   const reservas = homeData?.reservaciones ?? []
   const clubs = homeData?.clubs ?? []
   const jugadoresRecientes = homeData?.jugadores_recientes ?? []
+  const torneos = homeData?.torneos ?? []
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
@@ -93,11 +90,11 @@ export default function HomeUsuarioPadel() {
       {/* Calendario horizontal */}
       <div className="p-4 overflow-x-auto flex gap-3">
         {diasSemana.map((dia, idx) => {
-          const reservasDia = reservas.filter(r => dayjs(r.fecha, 'dddd D MMM').isSame(dia, 'day'))
+          const hasReservacion = reservas.some(r => dayjs.tz(r.fecha_reserva).isSame(dia, 'day'))
           return (
             <div
               key={idx}
-              className={`flex flex-col items-center px-3 py-2 rounded-2xl transition ${reservasDia.length ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'} shadow-md`}
+              className={`flex flex-col items-center px-3 py-2 rounded-2xl transition ${hasReservacion ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'} shadow-md`}
             >
               <span className="text-xs font-semibold">{dia.format('ddd')}</span>
               <span className="text-sm font-bold">{dia.format('D')}</span>
@@ -142,21 +139,84 @@ export default function HomeUsuarioPadel() {
 
       {/* Torneos */}
       <div className="py-4">
-        <h3 className="text-gray-700 font-semibold mb-2 flex items-center gap-1 px-4">
-          <Trophy className="w-4 h-4" /> Torneos y eventos
-        </h3>
-        <div className="flex gap-3 overflow-x-auto pb-2 px-4">
-          {torneos.map((t, idx) => (
-            <Card key={t.nombre} className="flex-none w-48 rounded-2xl p-3 bg-white/95 backdrop-blur-md cursor-pointer">
-              <h4 className="font-semibold text-gray-800 text-sm">{t.nombre}</h4>
-              <p className="text-xs text-gray-500">{t.fecha}</p>
-              <p className="text-xs text-gray-500">{t.inscritos} inscritos</p>
-              <Button className="mt-2 w-full text-xs py-1" onClick={() => navigate(`/torneos/${encodeURIComponent(t.nombre)}`)}>Inscribirse</Button>
-            </Card>
-          ))}
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 mb-3">
+          <h3 className="text-gray-900 font-semibold text-[15px] flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-gray-700" />
+            Torneos y eventos
+          </h3>
+          <Button
+            variant="ghost"
+            className="text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full px-3 py-1 transition-all"
+          >
+            Ver todos
+          </Button>
+        </div>
+
+        {/* Lista de torneos */}
+        <div className="flex gap-5 overflow-x-auto px-4 pb-3 pt-1 snap-x snap-mandatory scroll-smooth">
+          {torneos
+            .map((torneo) => {
+              const estado = "Próximo";
+              const estadoColor = "border-blue-400 text-blue-600";
+
+              return (
+                <motion.div
+                  key={torneo.nombre}
+                  whileHover={{ scale: 1.03, y: -3 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                  className="flex-none snap-center w-60"
+                >
+                  <Card 
+                    className="relative overflow-hidden rounded-3xl p-0 bg-white/90 backdrop-blur-lg border border-gray-200 shadow-[0_8px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
+                    onClick={() => navigate(`/torneos/${encodeURIComponent(torneo.nombre)}`)}
+                  >
+                    
+                    {/* Imagen de portada */}
+                    <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
+                      <img
+                        src={
+                          torneo.imagen
+                        }
+                        alt={torneo.nombre}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                      <div
+                        className={`absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-md bg-white/70 border ${estadoColor}`}
+                      >
+                        {estado}
+                      </div>
+                    </div>
+
+                    {/* Contenido */}
+                    <div className="p-4 flex flex-col justify-between h-[150px]">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
+                          {torneo.nombre}
+                        </h4>
+                        <p className="text-xs text-gray-600 mb-1 line-clamp-1">
+                          {torneo.club.nombre}
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          {dayjs.tz(torneo.fecha_inicio).format("DD MMM")} –{" "}
+                          {dayjs.tz(torneo.fecha_fin).format("DD MMM")}
+                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Users className="w-3.5 h-3.5 text-gray-400" />
+                          <p className="text-[11px] text-gray-500">
+                            {torneo.equipos_inscritos.length} inscritos
+                          </p>
+                        </div>
+                        
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
         </div>
       </div>
-
+      
       {/* Jugaste recientemente con */}
       <div className="py-6 px-4">
         <h3 className="text-gray-900 font-semibold mb-4 text-lg">🎾 Jugaste recientemente con</h3>

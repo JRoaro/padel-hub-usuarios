@@ -2,18 +2,27 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Trophy, Share2, ArrowLeft, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query'
+import TorneosRepository from '../../network/TorneosRepository'
+import Loading from '../../components/Loading'
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'
+import tz from 'dayjs/plugin/timezone'
 
-import laPista from "../../assets/img/LaPista.jpg"
-import Patro1 from "../../assets/img/patro1.png"
-import Patro2 from "../../assets/img/patro2.png"
-import Patro3 from "../../assets/img/patro3.png"
-import Patro4 from "../../assets/img/patro4.png"
-import Patro5 from "../../assets/img/patro5.png"
+dayjs.extend(utc)
+dayjs.extend(tz)
+dayjs.locale('es')
 
 export default function DetalleTorneo() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const torneoLocation = location.state
+
+  const { data: torneoData, isFetching } = useQuery({
+    queryKey: ['torneo'],
+    queryFn: () => TorneosRepository.getTorneo(torneoLocation?.id),
+  })
 
   // Estado para el toast
   const [showToast, setShowToast] = useState(false);
@@ -26,32 +35,9 @@ export default function DetalleTorneo() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const torneo = {
-    nombre: 'Torneo de Equipos 6ta 5ta',
-    club: 'La Pista',
-    fecha: '2025-10-22',
-    ubicacion: 'Ciudad Obregón',
-    estado: 'Abierto',
-    descripcion: 'Torneo de pádel conformado por 4 jugadores: 2 de categoría 6ta y 2 de categoría 5ta. El formato de competición será al mejor de tres partidos. Sistema de puntuación por partidos Primer partido: SUMA 12 Segundo partido: SUMA 10 Tercer partido: SUMA 11',
-    jugadores: [
-        { nombre: 'Juan', avatar: 'https://i.pravatar.cc/50?img=1' },
-        { nombre: 'Ana', avatar: 'https://i.pravatar.cc/50?img=2' },
-        { nombre: 'Luis', avatar: 'https://i.pravatar.cc/50?img=3' },
-        { nombre: 'María', avatar: 'https://i.pravatar.cc/50?img=4' },
-        { nombre: 'Carlos', avatar: 'https://i.pravatar.cc/50?img=5' },
-        { nombre: 'Lucía', avatar: 'https://i.pravatar.cc/50?img=6' },
-    ],
-    maxParticipantes: 12,
-    precio: 1000,
-    imgClub: laPista,
-    premios: ['1er lugar: Jersey c/u, 1hr de cancha c/u, $500 en efectivo c/u, Overgrip c/u y Sampler de la costilleria para equipo',
-        '2do lugar: Bebida de la barra para cada participante'
-    ],
-    modalidad: 'Round Robin',
-    tipo: 'Por equipo',
-  };
+  const torneo = torneoData?.torneo ?? torneoLocation ?? {}
 
-  const cupoPorcentaje = (torneo.jugadores?.length || 0) / torneo.maxParticipantes * 100;
+  const cupoPorcentaje = (torneo?.equipos_inscritos?.length || 0) / torneo?.limite_participantes * 100;
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col font-sans">
@@ -59,8 +45,8 @@ export default function DetalleTorneo() {
       {/* Header con parallax */}
       <div className="relative w-full h-64 overflow-hidden">
         <motion.img
-          src={torneo.imgClub}
-          alt={torneo.club}
+          src={torneo.imagen}
+          alt={torneo.nombre}
           className="w-full h-full object-cover"
           style={{ y: 0 }}
           whileInView={{ y: [-20, 0] }}
@@ -74,7 +60,7 @@ export default function DetalleTorneo() {
             <ArrowLeft className="h-6 w-6"/>
           </button>
           <h1 className="text-white text-2xl font-bold">{torneo.nombre}</h1>
-          <span className="text-white text-sm">{torneo.club}</span>
+          <span className="text-white text-sm">{torneo.club?.nombre}</span>
 
           {/* Estado pequeño */}
           <span className="mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold text-green-800 bg-green-100">
@@ -94,9 +80,9 @@ export default function DetalleTorneo() {
             transition={{ duration: 0.5 }}
             >
             <Calendar className="h-5 w-5"/>
-            <span>{dayjs(torneo.fecha).format('DD/MM/YYYY')}</span>
+            <span>{dayjs.tz(torneo.fecha_inicio).format('DD/MM/YYYY')} - {dayjs.tz(torneo.fecha_fin).format('DD/MM/YYYY')}</span>
             <MapPin className="h-5 w-5 ml-4"/>
-            <span>{torneo.ubicacion}</span>
+            <span>{torneo.club?.direccion}</span>
             </motion.div>
 
             <hr className="border-gray-200"/>
@@ -120,10 +106,10 @@ export default function DetalleTorneo() {
             transition={{ duration: 0.5, delay: 0.2 }}
             >
             <h3 className="font-semibold text-gray-800 mb-2">
-                Equipos  ({torneo.jugadores?.length || 0}/{torneo.maxParticipantes})
+                Equipos  ({torneo.equipos_inscritos?.length || 0}/{torneo.limite_participantes})
             </h3>
             <div className="flex -space-x-3 mb-2">
-                {(torneo.jugadores || []).map((j,i) => (
+                {(torneo.equipos_inscritos || []).map((j,i) => (
                 <motion.img
                     key={i}
                     src={j.avatar}
@@ -152,9 +138,8 @@ export default function DetalleTorneo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             >
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{torneo.modalidad}</span>
-            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">{torneo.tipo}</span>
-            {torneo.premios?.length > 0 && (
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{torneo.modalidad?.nombre}</span>
+            {torneo.premios && (
                 <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Premios disponibles</span>
             )}
             </motion.div>
@@ -168,16 +153,16 @@ export default function DetalleTorneo() {
             >
             <div className="flex justify-between">
                 <span>Precio de inscripción:</span>
-                <span>${torneo.precio} MXN</span>
+                <span>{torneo.costo_inscripcion} MXN</span>
             </div>
             <div className="flex justify-between">
                 <span>Límite de equipos:</span>
-                <span>{torneo.maxParticipantes}</span>
+                <span>{torneo.limite_participantes}</span>
             </div>
             </motion.div>
 
             {/* Premios destacados */}
-            {torneo.premios?.length > 0 && (
+            {false && (
                 <motion.div
                     className="space-y-4 mt-6"
                     initial="hidden"
@@ -231,7 +216,7 @@ export default function DetalleTorneo() {
                 <motion.button
                     className="flex-1 bg-blue-500 text-white py-3 rounded-2xl transition font-semibold flex items-center justify-center"
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate('/confirmarEquipoTorneo')}
+                    onClick={() => navigate('/confirmarEquipoTorneo', { state: { id: torneo.id } })}
                 >
                     <Trophy className="mr-2 h-5 w-5"/> Unirse
 
@@ -252,13 +237,7 @@ export default function DetalleTorneo() {
                 animate={{ x: ["0%", "-50%"] }}
                 transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
                 >
-                {[
-                    Patro1,
-                    Patro2,
-                    Patro3,
-                    Patro4,
-                    Patro5,
-                ].map((src, i) => (
+                {torneo.imagenes_patrocinadores?.map((src, i) => (
                     <img
                     key={i}
                     src={src}
@@ -267,13 +246,7 @@ export default function DetalleTorneo() {
                     />
                 ))}
                 {/* Repetimos las mismas imágenes para el loop infinito */}
-                {[
-                    Patro1,
-                    Patro2,
-                    Patro3,
-                    Patro4,
-                    Patro5,
-                ].map((src, i) => (
+                {torneo.imagenes_patrocinadores?.map((src, i) => (
                     <img
                     key={"loop" + i}
                     src={src}
