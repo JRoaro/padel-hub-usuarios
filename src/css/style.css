@@ -25,6 +25,15 @@ html, body {
     font-family: "Parrafos" !important;
     background-color: #fff;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .media-hover{padding: 7px; border-radius: 4px;}
 .media-hover:hover{ background-color: #F5F5F5; }
 .all-tittles{ font-family: "Titulos" !important; }

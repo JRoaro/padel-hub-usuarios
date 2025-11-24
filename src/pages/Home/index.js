@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 import { getLocalUser } from '../../utils/utils'
 import ReservacionesRepository from '../../network/ReservacionesRepository'
-
+import { Link } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query'
 import Loading from '../../components/Loading'
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
@@ -145,16 +145,19 @@ export default function HomeUsuarioPadel() {
             <Trophy className="w-5 h-5 text-gray-700" />
             Torneos y eventos
           </h3>
-          <Button
-            variant="ghost"
-            className="text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full px-3 py-1 transition-all"
-          >
-            Ver todos
-          </Button>
+          <Link to="/torneos">
+            <Button
+              variant="ghost"
+              className="text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full px-3 py-1 transition-all"
+            >
+              Ver todos
+            </Button>
+          </Link>
+
         </div>
 
         {/* Lista de torneos */}
-        <div className="flex gap-5 overflow-x-auto px-4 pb-3 pt-1 snap-x snap-mandatory scroll-smooth">
+        <div className="flex gap-3 overflow-x-auto px-2 pb-3 pt-1 snap-x snap-mandatory scroll-smooth">
           {torneos
             .map((torneo) => {
               const estado = "Próximo";
@@ -163,13 +166,12 @@ export default function HomeUsuarioPadel() {
               return (
                 <motion.div
                   key={torneo.nombre}
-                  whileHover={{ scale: 1.03, y: -3 }}
                   transition={{ type: "spring", stiffness: 200 }}
                   className="flex-none snap-center w-60"
                 >
                   <Card 
-                    className="relative overflow-hidden rounded-3xl p-0 bg-white/90 backdrop-blur-lg border border-gray-200 shadow-[0_8px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_35px_rgba(0,0,0,0.08)] transition-all duration-300"
-                    onClick={() => navigate(`/torneos/${encodeURIComponent(torneo.nombre)}`)}
+                    className="relative overflow-hidden rounded-3xl p-0 bg-white/90 backdrop-blur-lg border border-gray-200 transition-all duration-300"
+                    onClick={() => navigate(`/detalleTorneo`, { state: torneo })}
                   >
                     
                     {/* Imagen de portada */}
@@ -179,7 +181,7 @@ export default function HomeUsuarioPadel() {
                           torneo.imagen
                         }
                         alt={torneo.nombre}
-                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-300"
                       />
                       <div
                         className={`absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-md bg-white/70 border ${estadoColor}`}
@@ -203,7 +205,7 @@ export default function HomeUsuarioPadel() {
                         </p>
                         <div className="flex items-center gap-1 mt-1">
                           <Users className="w-3.5 h-3.5 text-gray-400" />
-                          <p className="text-[11px] text-gray-500">
+                          <p className="text-[11px] text-gray-500 m-0">
                             {torneo.equipos_inscritos.length} inscritos
                           </p>
                         </div>

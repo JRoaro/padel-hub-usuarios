@@ -1,6 +1,10 @@
 import fetchAPI from './apiConstants';
 
 class TorneosRepository {
+    static async getTorneos() {
+        return await fetchAPI('/api/cliente/torneos');
+    }
+
     static async getTorneo(id) {
         return await fetchAPI(`/api/cliente/torneos/${id}`);
     }
