@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { CalendarDays, PlusCircle, Trophy, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 import { getLocalUser } from '../../utils/utils'
 import ReservacionesRepository from '../../network/ReservacionesRepository'
-import { Link } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query'
 import Loading from '../../components/Loading'
 import BadgeEstadoReservacion from '../../components/BadgeEstadoReservacion'
@@ -17,21 +16,36 @@ dayjs.extend(utc)
 dayjs.extend(tz)
 dayjs.locale('es')
 
-const Card = ({ children, className, ...props }) => (
+const SkeletonRow = ({ height = 56, className = '' }) => (
+  <div className={`animate-pulse bg-white/20 rounded-2xl ${className}`} style={{ height }} />
+)
+
+const SkeletonCarousel = ({ count = 4, w = 140, h = 120 }) => (
+  <div className="flex gap-3 overflow-x-auto pb-2">
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="flex-none snap-start">
+        <div className="rounded-2xl bg-white/20 backdrop-blur h-24 w-36" style={{ width: w, height: h }} />
+      </div>
+    ))}
+  </div>
+)
+
+const IOSCard = ({ children, className = '', ...props }) => (
   <motion.div
     whileTap={{ scale: 0.97 }}
-    transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-    className={`rounded-2xl bg-white/95 backdrop-blur-md ${className}`}
+    transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+    className={`rounded-3xl bg-white/60 backdrop-blur-2xl border border-white/20 shadow-[0_8px_30px_rgba(2,6,23,0.06)] ${className}`}
     {...props}
   >
     {children}
   </motion.div>
 )
 
-const Button = ({ children, className, ...props }) => (
+const IOSButton = ({ children, className = '', ...props }) => (
   <motion.button
-    whileTap={{ scale: 0.94 }}
-    className={`px-4 py-2 rounded-2xl bg-blue-600 text-white font-medium shadow-md transition ${className}`}
+    whileTap={{ scale: 0.95 }}
+    transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+    className={`rounded-2xl px-4 py-2 font-medium bg-blue-500/85 text-white backdrop-blur-sm shadow-sm ${className}`}
     {...props}
   >
     {children}
@@ -42,6 +56,7 @@ export default function HomeUsuarioPadel() {
   const navigate = useNavigate()
   const [diasSemana, setDiasSemana] = useState([])
   const [user, setUser] = useState(null)
+  const [headerSmall, setHeaderSmall] = useState(false)
 
   useEffect(() => {
     const hoy = dayjs.tz()
@@ -50,234 +65,197 @@ export default function HomeUsuarioPadel() {
 
     // Obtener usuario
     setUser(getLocalUser())
+
+    const onScroll = () => setHeaderSmall(window.scrollY > 28)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const { data: homeData, isFetching } = useQuery({
+  const { data: homeData, isFetching, isError, refetch } = useQuery({
     queryKey: ['home'],
     queryFn: () => ReservacionesRepository.getHomeData(),
+    staleTime: 1000 * 60 * 2, // 2 minutes
   })
 
-  const reservas = homeData?.reservaciones ?? []
-  const clubs = homeData?.clubs ?? []
-  const jugadoresRecientes = homeData?.jugadores_recientes ?? []
-  const torneos = homeData?.torneos ?? []
+  const reservas = useMemo(() => homeData?.reservaciones ?? [], [homeData])
+  const clubs = useMemo(() => homeData?.clubs ?? [], [homeData])
+  const jugadoresRecientes = useMemo(() => homeData?.jugadores_recientes ?? [], [homeData])
+  const torneos = useMemo(() => homeData?.torneos ?? [], [homeData])
+
+  const handleNavigateDetalleReserva = useCallback((reservacion) => {
+    navigate('/detalleReserva', { state: reservacion })
+  }, [navigate])
+
+  const Img = ({ src, alt, className = '', style = {} }) => (
+    <img src={src ?? '/img-placeholder.png'} alt={alt ?? ''} className={className} loading="lazy" decoding="async" style={style} />
+  )
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 relative overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-gray-100/30 relative overflow-x-hidden">
 
-      {/* Header */}
-      <header className="backdrop-blur-lg bg-white/80 border-b border-gray-200 sticky top-0 z-50 p-4 flex items-center justify-start">
-        <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/70">
-            <img src={user?.foto} alt="Perfil" className="w-full h-full object-cover"/>
+      {/* HEADER */}
+      <motion.header
+        initial={{ paddingTop: 28, paddingBottom: 16 }}
+        animate={{ paddingTop: headerSmall ? 8 : 28, paddingBottom: headerSmall ? 8 : 16 }}
+        className="sticky top-0 z-50 px-4 backdrop-blur-2xl bg-white/50 border-b border-white/20"
+      >
+        <div className="flex items-center gap-4 py-2">
+          <div className="w-14 h-14 rounded-full overflow-hidden shadow-md border border-white/30">
+            <Img src={user?.foto ?? '/avatar-placeholder.png'} alt={user?.nombre ?? 'Perfil'} className="w-full h-full object-cover" />
           </div>
-          <div className="flex flex-col leading-tight">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Hola, <span className="font-bold">{user?.nombre}</span> 👋
-            </h2>
-            <p className="text-sm text-gray-500">{dayjs().format('dddd D [de] MMMM')}</p>
+          <div className="leading-tight">
+            <p className="text-[13px] text-gray-600">{dayjs().format('dddd D MMM')}</p>
+            <motion.h2 animate={{ fontSize: headerSmall ? 16 : 22 }} className="font-semibold text-gray-900 tracking-tight mt-0">Hola {user?.nombre ?? ''}</motion.h2>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Botón nueva reserva */}
-      <div className="px-4 py-3">
-        <Button className="w-full flex items-center justify-center gap-2" onClick={() => navigate('/reservarCancha')}>
-          <PlusCircle className="h-5 w-5" /> Nueva reserva
-        </Button>
-      </div>
-
-      {/* Calendario horizontal */}
-      <div className="p-4 overflow-x-auto flex gap-3">
-        {diasSemana.map((dia, idx) => {
-          const hasReservacion = reservas.some(r => dayjs.tz(r.fecha_reserva).isSame(dia, 'day'))
-          return (
-            <div
-              key={idx}
-              className={`flex flex-col items-center px-3 py-2 rounded-2xl transition ${hasReservacion ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'} shadow-md`}
-            >
-              <span className="text-xs font-semibold">{dia.format('ddd')}</span>
-              <span className="text-sm font-bold">{dia.format('D')}</span>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Próximas reservas */}
-      <div className="p-4 space-y-2">
-        <h3 className="text-gray-700 font-semibold flex items-center gap-1 mb-2">
-          <CalendarDays className="h-4 w-4" /> Próximas reservas
-        </h3>
-        <AnimatePresence>
-          {reservas.length > 0 ? reservas.map((reservacion, idx) => (
-            <motion.div
-              key={`reservacion-${reservacion.id}`}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
-            >
-              <Card
-                onClick={() => navigate(`/detalleReserva`, { state: reservacion })}
-                className="flex items-center justify-between p-3 cursor-pointer"
-              >
-                <div className="flex flex-col">
-                  <span className="font-medium text-gray-800 text-sm">{reservacion.club.nombre} - {reservacion.cancha.nombre}</span>
-                  <span className="text-xs text-gray-500">{dayjs.tz(reservacion.fecha_reserva).format('DD MMM')} - {reservacion.hora_inicio_reserva}</span>
-                </div>
-                <BadgeEstadoReservacion estado={reservacion.estado} />
-              </Card>
-            </motion.div>
-          )) :
-            <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
-              <span>No hay reservaciones disponibles</span>
-              <span>¡Reserva tu primera!</span>
-            </div>
-          }
-        </AnimatePresence>
-      </div>
-
-      {/* Torneos */}
-      <div className="py-4">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 mb-3">
-          <h3 className="text-gray-900 font-semibold text-[15px] flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-gray-700" />
-            Torneos y eventos
-          </h3>
-          <Link to="/torneos">
-            <Button
-              variant="ghost"
-              className="text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full px-3 py-1 transition-all"
-            >
-              Ver todos
-            </Button>
-          </Link>
-
+      {/* CONTENIDO */}
+      <div className="px-4">
+        {/* NUEVA RESERVA */}
+        <div className="mt-3">
+          <IOSButton className="w-full flex items-center justify-center gap-2 text-[15px] py-3" onClick={() => navigate('/reservarCancha')} aria-label="Nueva reserva">
+            <PlusCircle className="h-5 w-5" /> Nueva reserva
+          </IOSButton>
         </div>
 
-        {/* Lista de torneos */}
-        <div className="flex gap-3 overflow-x-auto px-2 pb-3 pt-1 snap-x snap-mandatory scroll-smooth">
-          {torneos
-            .map((torneo) => {
-              const estado = "Próximo";
-              const estadoColor = "border-blue-400 text-blue-600";
-
+        {/* CALENDARIO HORIZONTAL */}
+        <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2">
+          {isFetching ? (
+            <div className="flex gap-3">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="snap-start flex flex-col items-center px-3 py-2 rounded-2xl bg-white/20 w-14 h-14" />
+              ))}
+            </div>
+          ) : (
+            diasSemana.map((dia, idx) => {
+              const hasReservacion = reservas.some(r => dayjs.tz(r.fecha_reserva).isSame(dia, 'day'))
               return (
-                <motion.div
-                  key={torneo.nombre}
-                  transition={{ type: "spring", stiffness: 200 }}
-                  className="flex-none snap-center w-60"
+                <div
+                  key={idx}
+                  className={`snap-start flex flex-col items-center px-3 py-2 rounded-2xl ${hasReservacion ? 'bg-blue-500 text-white' : 'bg-white/80 text-gray-900 border border-white/10'} shadow-sm`}
                 >
-                  <Card 
-                    className="relative overflow-hidden rounded-3xl p-0 bg-white/90 backdrop-blur-lg border border-gray-200 transition-all duration-300"
-                    onClick={() => navigate(`/detalleTorneo`, { state: torneo })}
-                  >
-                    
-                    {/* Imagen de portada */}
-                    <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
-                      <img
-                        src={
-                          torneo.imagen
-                        }
-                        alt={torneo.nombre}
-                        className="h-full w-full object-cover transition-transform duration-300"
-                      />
-                      <div
-                        className={`absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-md bg-white/70 border ${estadoColor}`}
-                      >
-                        {estado}
-                      </div>
-                    </div>
+                  <span className="text-xs font-medium">{dia.format('ddd')}</span>
+                  <span className="text-sm font-bold">{dia.format('D')}</span>
+                </div>
+              )
+            })
+          )}
+        </div>
 
-                    {/* Contenido */}
-                    <div className="p-4 flex flex-col justify-between h-[150px]">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
-                          {torneo.nombre}
-                        </h4>
-                        <p className="text-xs text-gray-600 mb-1 line-clamp-1">
-                          {torneo.club.nombre}
-                        </p>
-                        <p className="text-[11px] text-gray-500">
-                          {dayjs.tz(torneo.fecha_inicio).format("DD MMM")} –{" "}
-                          {dayjs.tz(torneo.fecha_fin).format("DD MMM")}
-                        </p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Users className="w-3.5 h-3.5 text-gray-400" />
-                          <p className="text-[11px] text-gray-500 m-0">
-                            {torneo.equipos_inscritos.length} inscritos
-                          </p>
-                        </div>
-                        
-                      </div>
+        {/* PRÓXIMAS RESERVAS */}
+        <section className="mt-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-gray-800 font-semibold mb-2 flex items-center gap-1 text-[15px]"><CalendarDays className="h-4 w-4" /> Próximas reservas</h3>
+            {isError && (
+              <button onClick={() => refetch()} className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full border border-white/10">Reintentar</button>
+            )}
+          </div>
+
+          <AnimatePresence>
+            {isFetching ? (
+              <div className="space-y-3">{[1,2,3].map(i => <SkeletonRow key={i} height={72} />)}</div>
+            ) : reservas.length > 0 ? reservas.map((reservacion, idx) => (
+              <motion.div
+                key={reservacion.id}
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ delay: idx * 0.06, type: 'spring', stiffness: 300 }}
+                className="mb-3"
+              >
+                <IOSCard className="p-4 flex items-center justify-between cursor-pointer" onClick={() => handleNavigateDetalleReserva(reservacion)} role="button" aria-label={`Ver reservación en ${reservacion.club?.nombre}`}>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900 text-sm">{reservacion.club?.nombre} - {reservacion.cancha?.nombre}</span>
+                    <span className="text-xs text-gray-500">{dayjs.tz(reservacion.fecha_reserva).format('DD MMM')} · {reservacion.hora_inicio_reserva}</span>
+                  </div>
+                  <div className="ml-4"><BadgeEstadoReservacion estado={reservacion.estado} /></div>
+                </IOSCard>
+              </motion.div>
+            )) : (
+              <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm py-6">
+                <span>No tienes reservaciones</span>
+              </div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        {/* TORNEOS */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-gray-900 font-semibold text-[15px] flex items-center gap-2"><Trophy className="w-5 h-5 text-gray-700" /> Torneos y eventos</h3>
+            <Link to="/torneos"><button className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full border border-white/20">Ver todos</button></Link>
+          </div>
+
+          {isFetching ? (
+            <SkeletonCarousel count={3} />
+          ) : torneos.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3">
+              {torneos.map((t) => (
+                <motion.div key={t.id} className="snap-start w-60 flex-none" whileTap={{ scale: 0.97 }}>
+                  <IOSCard onClick={() => navigate('/detalleTorneo', { state: t })} className="p-0 overflow-hidden rounded-3xl">
+                    <div className="h-28 w-full overflow-hidden"><Img src={t.imagen} alt={t.nombre} className="w-full h-full object-cover" /></div>
+                    <div className="p-4">
+                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">{t.nombre}</h4>
+                      <p className="text-xs text-gray-600 line-clamp-1">{t.club?.nombre}</p>
+                      <p className="text-[11px] text-gray-500">{dayjs.tz(t.fecha_inicio).format('DD MMM')} - {dayjs.tz(t.fecha_fin).format('DD MMM')}</p>
+                      <div className="flex items-center gap-1 mt-1"><Users className="w-3 h-3 text-gray-400" /><p className="text-[11px] text-gray-500">{t.equipos_inscritos?.length ?? 0} inscritos</p></div>
                     </div>
-                  </Card>
+                  </IOSCard>
                 </motion.div>
-              );
-            })}
-        </div>
-      </div>
-      
-      {/* Jugaste recientemente con */}
-      <div className="py-6 px-4">
-        <h3 className="text-gray-900 font-semibold mb-4 text-lg">🎾 Jugaste recientemente con</h3>
-        <div className="flex gap-4 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
-          {jugadoresRecientes.length === 0 && <p className="text-gray-500 text-sm">No has jugado con nadie recientemente</p>}
-          {jugadoresRecientes.map((jugador, idx) => (
-            <motion.div 
-              key={`jugador-${jugador.id}`}
-              className="flex-none snap-center flex flex-col items-center cursor-pointer"
-              initial={{ scale: 0.9, opacity: 0.6 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25, delay: idx * 0.05 }}
-              onClick={() => navigate("/perfil?id=" + jugador.id)}
-            >
-              <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
-                <img 
-                  src={jugador.foto} 
-                  alt={jugador.nombre} 
-                  className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              <p className="text-center text-sm font-medium text-gray-900 mt-2">{jugador.nombre}</p>
-            </motion.div>
-          ))}
-        </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-4 text-gray-500 text-sm">No hay torneos por ahora</div>
+          )}
+        </section>
+
+        {/* JUGASTE RECIENTEMENTE */}
+        <section className="mt-10">
+          <h3 className="text-gray-900 font-semibold mb-4 text-[16px]">🎾 Jugaste recientemente con</h3>
+          {isFetching ? (
+            <SkeletonCarousel count={4} w={80} h={80} />
+          ) : jugadoresRecientes.length === 0 ? (
+            <p className="text-gray-500 text-sm">No has jugado con nadie recientemente</p>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2">
+              {jugadoresRecientes.map((jugador, idx) => (
+                <motion.div key={jugador.id} className="flex-none snap-start flex flex-col items-center" whileTap={{ scale: 0.95 }} transition={{ delay: idx * 0.04 }} onClick={() => navigate(`/perfil?id=${jugador.id}`)}>
+                  <div className="w-20 h-20 rounded-full overflow-hidden shadow-md border border-white/30"><Img src={jugador.foto} alt={jugador.nombre} className="w-full h-full object-cover" /></div>
+                  <p className="text-center text-sm font-medium text-gray-900 mt-2">{jugador.nombre}</p>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* CANCHAS CERCA DE TI */}
+        <section className="mt-6 mb-8">
+          <h3 className="text-gray-900 font-semibold mb-3 text-lg">🏟️ Canchas cerca de ti</h3>
+          {isFetching ? (
+            <SkeletonCarousel count={4} />
+          ) : clubs.length === 0 ? (
+            <p className="text-gray-500 text-sm">No se encontraron canchas cercanas</p>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3">
+              {clubs.map((club, idx) => (
+                <motion.div key={club.id} className="flex-none snap-start w-36" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05, type: 'spring', stiffness: 260 }} whileTap={{ scale: 0.97 }}>
+                  <IOSCard className="p-2 rounded-2xl flex flex-col justify-between h-full" onClick={() => navigate(`/club/${club.id}`)}>
+                    <div className="w-full h-24 rounded-xl overflow-hidden"><Img src={club.imagen} alt={club.nombre} className="w-full h-full object-cover" /></div>
+                    <div className="mt-2"><h4 className="text-sm font-semibold text-gray-900 line-clamp-1">{club.nombre}</h4><p className="text-xs text-gray-500">A {club.distancia ?? '—'} km</p></div>
+                    <IOSButton className="mt-2 w-full text-xs py-2" onClick={(e) => { e.stopPropagation(); navigate(`/reservarCancha?club=${club.id}`); }}>Reservar</IOSButton>
+                  </IOSCard>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* footer loading indicator */}
+        {isFetching && <div className="px-4 py-4"><Loading /></div>}
+
       </div>
 
-      {/* Canchas cerca de ti - estilo compacto cuadrado */}
-      <div className="py-4 px-4">
-        <h3 className="text-gray-900 font-semibold mb-3 text-lg">🏟️ Canchas cerca de ti</h3>
-        <div className="flex gap-3 overflow-x-auto pb-2 px-2 snap-x snap-mandatory">
-          {clubs.map((club, idx) => (
-            <motion.div
-              key={`club-${club.id}`}
-              className="flex-none snap-center w-36 rounded-2xl bg-white/95 backdrop-blur-md cursor-pointer p-2 shadow-md flex flex-col justify-between"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05, type: 'spring', stiffness: 300 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <div className="w-full h-24 bg-gray-200 rounded-xl overflow-hidden">
-                <img
-                  src={club.imagen}
-                  alt={club.nombre}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="mt-2 flex flex-col gap-1">
-                <h4 className="text-sm font-semibold text-gray-900">{club.nombre}</h4>
-                <p className="text-xs text-gray-500">A 2 km de ti</p>
-              </div>
-              <Button className="mt-2 w-full text-xs py-1">Reservar</Button>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {isFetching && <Loading />}
     </div>
   )
 }
