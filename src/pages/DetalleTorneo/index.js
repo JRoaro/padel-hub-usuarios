@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, Share2, ArrowLeft, Gift } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Share2, ArrowLeft, Gift, Users, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query'
 import TorneosRepository from '../../network/TorneosRepository'
@@ -88,94 +88,55 @@ export default function DetalleTorneo() {
 
             {/* Fecha y ubicación */}
             <motion.div
-            className="
-                flex items-center gap-2 
-                text-gray-700 
-                bg-white/60 backdrop-blur-md
-                px-3 py-2 
-                rounded-xl shadow-sm 
-                border border-white/40
-            "
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}  
+            className="flex items-center justify-between text-gray-800 bg-white/50 px-4 py-3 rounded-2xl border border-white/30"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             >
-
-                {/* Fecha */}
-                <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium">
-                    {dayjs.tz(torneo.fecha_inicio).format('DD/MM/YYYY')}
-                    </span>
+                <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-blue-500"/>
+                    <span className="text-sm font-medium">{dayjs.tz(torneo.fecha_inicio).format('DD/MM/YYYY')}</span>
                 </div>
 
-                {/* Separador minimal */}
-                <div className="w-[1px] h-4 bg-gray-300/50 mx-1" />
-
-                {/* Ubicación clickable estilo iOS */}
                 <motion.div
-                className="
-                    flex items-center gap-1.5
-                    cursor-pointer
-                    text-gray-700
-                    active:scale-[0.97]
-                    transition-all
-                    select-none
-                "
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                    const encoded = encodeURIComponent(torneo.club?.direccion);
-                    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-
-                    const url = isIOS
-                    ? `maps://maps.apple.com/?q=${encoded}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
-
-                    window.open(url, "_blank");
-                }}
+                    className="flex items-center gap-1 cursor-pointer select-none"
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => abrirEnMaps()}
                 >
-                <MapPin className="h-4 w-4 text-blue-500" />
-
-                <span
-                    className="
-                    text-sm font-medium
-                    underline decoration-[1px] underline-offset-[3px]
-                    decoration-transparent hover:decoration-blue-400
-                    transition
-                    max-w-[180px] truncate
-                    "
-                >
+                    <MapPin className="h-5 w-5 text-red-500"/>
+                    <span className="text-sm font-medium truncate max-w-[160px] underline decoration-blue-400 underline-offset-2">
                     {torneo.club?.direccion}
-                </span>
+                    </span>
                 </motion.div>
             </motion.div>
-
 
 
             <hr className="border-gray-200"/>
 
             {/* Chips de info rápida */}
-            <motion.div
-            className="flex flex-wrap gap-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            >
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{torneo.modalidad?.nombre}</span>
-            {torneo.premios?.length > 0 && (
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Premios disponibles</span>
-            )}
-            </motion.div>
+            <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold">
+                    {torneo.modalidad?.nombre}
+                </span>
+                {torneo.premios?.length > 0 && (
+                    <span className="px-3 py-1 bg-yellow-50 text-yellow-600 rounded-full text-xs font-semibold">
+                    Premios disponibles
+                    </span>
+                )}
+            </div>
+
 
             {/* Descripción */}
             <motion.div
+            className="bg-white/60 backdrop-blur-xl border border-white/20 rounded-2xl p-4 space-y-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             >
-            <h3 className="font-semibold text-gray-800 mb-1">Descripción</h3>
+            <h3 className="text-gray-900 font-semibold text-base">Descripción</h3>
             <p className="text-gray-700 text-sm leading-relaxed">{torneo.descripcion}</p>
             </motion.div>
+
 
             <hr className="border-gray-200"/>
 
@@ -190,37 +151,17 @@ export default function DetalleTorneo() {
                     <h3 className="font-semibold text-gray-800 mb-2">Premios</h3>
 
                     <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                    {torneo.premios.map((p, index) => (
-                        <motion.div
-                        key={index}
-                        whileTap={{ scale: 0.97 }}
-                        className="
-                            min-w-[110px] px-3 py-3 rounded-3xl
-                            bg-white/60 backdrop-blur-md
-                            shadow-[0_1px_3px_rgba(0,0,0,0.08)]
-                            border border-white/40
-                            flex flex-col items-center text-center
-                        "
-                        >
-                        <div className="text-2xl mb-1">
-                            {index === 0 && "🥇"}
-                            {index === 1 && "🥈"}
-                            {index === 2 && "🥉"}
-                            {index > 2 && "🏅"}
-                        </div>
-
-                        <p className="text-gray-800 font-medium text-xs">
-                            {index + 1}° Lugar
-                        </p>
-
-                        <p className="text-gray-600 text-[11px] mt-1 line-clamp-4">
-                            {p.descripcion}
-                        </p>
-
-
-                        </motion.div>
-                    ))}
+                        {torneo.premios.map((p, index) => (
+                            <div key={index} className="min-w-[120px] px-3 py-3 bg-white/50 rounded-2xl border border-white/30 flex flex-col items-center text-center">
+                            <div className="text-2xl mb-1">
+                                {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "🏅"}
+                            </div>
+                            <p className="text-gray-900 font-medium text-xs">{index + 1}° Lugar</p>
+                            <p className="text-gray-600 text-[11px] mt-1 line-clamp-3">{p.descripcion}</p>
+                            </div>
+                        ))}
                     </div>
+
                 </motion.div>
             )} 
 
@@ -236,21 +177,17 @@ export default function DetalleTorneo() {
                 Equipos  ({torneo.equipos_inscritos?.length || 0}/{torneo.limite_equipos})
             </h3>
             <div className="flex -space-x-3 mb-2">
-                {(torneo.equipos_inscritos || []).map((equipo, index) => {
-                    let imagen = ""
-                    if (equipo.usuarios.length > 0) {
-                        imagen = equipo.usuarios[0].foto
-                    }
-                    return (
-                        <motion.img
-                            key={index}
-                            src={imagen}
-                            alt={equipo.nombre}
-                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                        />
-                    )
-                })}
-            </div>
+                {torneo.equipos_inscritos?.map((equipo, i) => (
+                    <img
+                    key={i}
+                    src={equipo.usuarios[0]?.foto || "/default-avatar.png"}
+                    alt={equipo.nombre}
+                    className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                    />
+                ))}
+                </div>
+            
+
             {/* Barra de cupo */}
             <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <motion.div 
@@ -266,20 +203,35 @@ export default function DetalleTorneo() {
 
             {/* Información adicional */}
             <motion.div
-            className="space-y-2 text-sm text-gray-700"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            >
-            <div className="flex justify-between">
-                <span>Precio de inscripción:</span>
-                <span>{torneo.costo_inscripcion} MXN</span>
-            </div>
-            <div className="flex justify-between">
-                <span>Límite de equipos:</span>
-                <span>{torneo.limite_equipos}</span>
-            </div>
+                className="grid grid-cols-2 gap-4 mt-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                {/* Precio de inscripción */}
+                <div className="flex flex-col items-center bg-white/40 border border-white/30 backdrop-blur-md rounded-3xl py-4 px-3">
+                    <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-green-500" />
+                    <span className="text-xs text-gray-500">Inscripción</span>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900 mt-1">
+                    {torneo.costo_inscripcion} MXN
+                    </span>
+                </div>
+
+                {/* Límite de equipos */}
+                <div className="flex flex-col items-center bg-white/40 border border-white/30 backdrop-blur-md rounded-3xl py-4 px-3">
+                    <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-blue-500" />
+                    <span className="text-xs text-gray-500">Límite de equipos</span>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900 mt-1">
+                    {torneo.limite_equipos}
+                    </span>
+                </div>
             </motion.div>
+
+
 
             {/* Premios destacados */}
             {false && (
@@ -320,30 +272,26 @@ export default function DetalleTorneo() {
 
 
             {/* Botones integrados */}
-            <motion.div
-            className="flex gap-4 mt-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
-            >
+            <div className="flex gap-4 mt-6">
                 <motion.button
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl transition font-semibold flex items-center justify-center"
-                    whileTap={{ scale: 0.95 }}
+                    className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-2xl font-semibold flex items-center justify-center"
+                    whileTap={{ scale: 0.96 }}
                     onClick={handleCompartir}
                 >
                     <Share2 className="mr-2 h-5 w-5"/> Compartir
                 </motion.button>
+
                 {!isInscrito && (
                     <motion.button
-                        className="flex-1 bg-blue-500 text-white py-3 rounded-2xl transition font-semibold flex items-center justify-center"
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate('/confirmarEquipoTorneo', { state: { id: torneo.id } })}
+                    className="flex-1 py-3 bg-blue-500 text-white rounded-2xl font-semibold flex items-center justify-center"
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => navigate('/confirmarEquipoTorneo', { state: { id: torneo.id } })}
                     >
-                        <Trophy className="mr-2 h-5 w-5"/> Unirse
-
+                    <Trophy className="mr-2 h-5 w-5"/> Unirse
                     </motion.button>
                 )}
-            </motion.div>
+            </div>
+
 
             {/* Carousel de patrocinadores */}
             <motion.div 

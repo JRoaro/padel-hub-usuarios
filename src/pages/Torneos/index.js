@@ -42,6 +42,7 @@ export default function Torneos() {
 
   const isInscrito = (torneo) =>
     torneo?.equipos_inscritos?.some(e => e.usuarios.some(u => u.id == user?.id));
+  const getEquipoUser = (torneo) => torneo?.equipos_inscritos?.find(e => e.usuarios.some(u => u.id == user?.id));
 
   const cardFade = {
     hidden: { opacity: 0, y: 8 },
@@ -281,8 +282,11 @@ export default function Torneos() {
                 </button>
 
                 {isInscrito(modalTorneo) ? (
-                  <button className="flex-1 bg-green-500 text-white py-3 rounded-2xl shadow-md font-semibold flex items-center justify-center gap-1">
-                    <Check className="h-4 w-4" /> Inscrito
+                  <button 
+                    className="flex-1 bg-green-500 text-white py-3 rounded-2xl shadow-md font-semibold flex items-center justify-center gap-1"
+                    onClick={() => navigate('/detalleEquipo', { state: getEquipoUser(modalTorneo) })}
+                  >
+                    Ver equipo
                   </button>
                 ) : (
                   <button

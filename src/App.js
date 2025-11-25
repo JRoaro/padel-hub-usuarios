@@ -16,6 +16,8 @@ import Torneos from './pages/Torneos'
 import DetalleTorneo from './pages/DetalleTorneo'
 import ConfirmarEquipoTorneo from './pages/ConfirmarEquipoTorneo'
 import EstatusEquipoTorneo from './pages/EstatusEquipoTorneo'
+import DetalleEquipo from './pages/DetalleEquipo'
+import Invitacion from './pages/Invitacion'
 
 //Rutas privadas 
 import PrivateRoutes from './utils/utils'
@@ -29,7 +31,7 @@ function App() {
       <Router>
         <Routes>
           {/* Login fuera del layout */}
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Login />} />  
           <Route path="/registrar" element={<Registrar />} />
 
           {/* Vistas que requieren autenticación */}
@@ -44,10 +46,13 @@ function App() {
               <Route path="/detalleReserva" element={<DetalleReserva />} />
               <Route path="/torneos" element={<Torneos />} />
               <Route path="/estatusEquipoTorneo" element={<EstatusEquipoTorneo />} />
+              <Route path="/detalleEquipo" element={<DetalleEquipo />} />
+              
             </Route>
 
             <Route path="/detalleTorneo" element={<DetalleTorneo />} />
             <Route path="/confirmarEquipoTorneo" element={<ConfirmarEquipoTorneo />} />
+            <Route path="/invitacion" element={<Invitacion />} />
           </Route>
           
         </Routes>

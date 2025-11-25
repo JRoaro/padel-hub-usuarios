@@ -34,7 +34,7 @@ const IOSCard = ({ children, className = '', ...props }) => (
   <motion.div
     whileTap={{ scale: 0.97 }}
     transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-    className={`rounded-3xl bg-white/60 backdrop-blur-2xl border border-white/20 shadow-[0_8px_30px_rgba(2,6,23,0.06)] ${className}`}
+    className={`rounded-3xl bg-white/60 backdrop-blur-2xl border border-white/20 ${className}`}
     {...props}
   >
     {children}
@@ -45,7 +45,7 @@ const IOSButton = ({ children, className = '', ...props }) => (
   <motion.button
     whileTap={{ scale: 0.95 }}
     transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-    className={`rounded-2xl px-4 py-2 font-medium bg-blue-500/85 text-white backdrop-blur-sm shadow-sm ${className}`}
+    className={`rounded-2xl px-4 py-2 font-medium bg-blue-500/85 text-white backdrop-blur-sm ${className}`}
     {...props}
   >
     {children}
@@ -97,10 +97,10 @@ export default function HomeUsuarioPadel() {
       <motion.header
         initial={{ paddingTop: 28, paddingBottom: 16 }}
         animate={{ paddingTop: headerSmall ? 8 : 28, paddingBottom: headerSmall ? 8 : 16 }}
-        className="sticky top-0 z-50 px-4 backdrop-blur-2xl bg-white/50 border-b border-white/20"
+        className="sticky top-0 z-50 px-4 backdrop-blur-2xl bg-white/50 border-b"
       >
         <div className="flex items-center gap-4 py-2">
-          <div className="w-14 h-14 rounded-full overflow-hidden shadow-md border border-white/30">
+          <div className="w-14 h-14 rounded-full overflow-hidden border">
             <Img src={user?.foto ?? '/avatar-placeholder.png'} alt={user?.nombre ?? 'Perfil'} className="w-full h-full object-cover" />
           </div>
           <div className="leading-tight">
@@ -133,7 +133,7 @@ export default function HomeUsuarioPadel() {
               return (
                 <div
                   key={idx}
-                  className={`snap-start flex flex-col items-center px-3 py-2 rounded-2xl ${hasReservacion ? 'bg-blue-500 text-white' : 'bg-white/80 text-gray-900 border border-white/10'} shadow-sm`}
+                  className={`snap-start flex flex-col items-center px-3 py-2 rounded-2xl ${hasReservacion ? 'bg-blue-500 text-white' : 'bg-white/80 text-gray-900 border'}`}
                 >
                   <span className="text-xs font-medium">{dia.format('ddd')}</span>
                   <span className="text-sm font-bold">{dia.format('D')}</span>
@@ -148,7 +148,7 @@ export default function HomeUsuarioPadel() {
           <div className="flex items-center justify-between">
             <h3 className="text-gray-800 font-semibold mb-2 flex items-center gap-1 text-[15px]"><CalendarDays className="h-4 w-4" /> Próximas reservas</h3>
             {isError && (
-              <button onClick={() => refetch()} className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full border border-white/10">Reintentar</button>
+              <button onClick={() => refetch()} className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full">Reintentar</button>
             )}
           </div>
 
@@ -184,7 +184,7 @@ export default function HomeUsuarioPadel() {
         <section className="mt-8">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-gray-900 font-semibold text-[15px] flex items-center gap-2"><Trophy className="w-5 h-5 text-gray-700" /> Torneos y eventos</h3>
-            <Link to="/torneos"><button className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full border border-white/20">Ver todos</button></Link>
+            <Link to="/torneos"><button className="text-xs text-gray-600 px-3 py-1 bg-white/60 rounded-full border">Ver todos</button></Link>
           </div>
 
           {isFetching ? (
@@ -221,7 +221,7 @@ export default function HomeUsuarioPadel() {
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2">
               {jugadoresRecientes.map((jugador, idx) => (
                 <motion.div key={jugador.id} className="flex-none snap-start flex flex-col items-center" whileTap={{ scale: 0.95 }} transition={{ delay: idx * 0.04 }} onClick={() => navigate(`/perfil?id=${jugador.id}`)}>
-                  <div className="w-20 h-20 rounded-full overflow-hidden shadow-md border border-white/30"><Img src={jugador.foto} alt={jugador.nombre} className="w-full h-full object-cover" /></div>
+                  <div className="w-20 h-20 rounded-full overflow-hidden border"><Img src={jugador.foto} alt={jugador.nombre} className="w-full h-full object-cover" /></div>
                   <p className="text-center text-sm font-medium text-gray-900 mt-2">{jugador.nombre}</p>
                 </motion.div>
               ))}
