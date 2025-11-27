@@ -35,7 +35,7 @@ const ItemReserva = ({ reserva, onClick, onCancel = null, onRepeat }) => (
           <BadgeEstadoReservacion estado={reserva.estado} />
           {onCancel != null ? (
             <button
-              onClick={(e) => { e.stopPropagation(); onCancel(reserva.id) }}
+              onClick={(e) => { e.stopPropagation(); onCancel(reserva.hash) }}
               className="p-2 rounded-full bg-red-50 hover:bg-red-100"
             >
               <Trash2 className="w-4 h-4 text-red-600" />
@@ -70,8 +70,8 @@ export default function ReservasMovil() {
   })
 
   const cancelarReservacionMutation = useMutation({
-    mutationFn: async (id) => {
-      return ReservacionesRepository.cancelarReservacion(id)
+    mutationFn: async (hash) => {
+      return ReservacionesRepository.cancelarReservacion(hash)
     },
     onSuccess: (data) => {
       if (data && data.success) {
@@ -94,8 +94,8 @@ export default function ReservasMovil() {
   const filtradas = filterReservaciones()
   const filtros = ['Todos', 'Reservado', 'En curso', 'Finalizado', 'Cancelado']
 
-  const handleCancel = (id) => {
-    cancelarReservacionMutation.mutate(id)
+  const handleCancel = (hash) => {
+    cancelarReservacionMutation.mutate(hash)
   }
 
   return (

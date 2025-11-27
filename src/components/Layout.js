@@ -28,19 +28,21 @@ export default function LayoutMovil() {
           <Calendar className="h-5 w-5" />
           <span className="text-[10px]">Reservas</span>
         </button>
-        <button
-          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${window.location.pathname === '/perfil' ? '!text-blue-600' : ''}`}
-          onClick={() => navigate('/perfil', { replace: true })}
-        >
-          <User className="h-5 w-5" />
-          <span className="text-[10px]">Perfil</span>
-        </button>
+        
         <button
           className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${window.location.pathname === '/torneos' ? '!text-blue-600' : ''}`}
           onClick={() => navigate('/torneos')}
         >
           <Trophy className="h-5 w-5" />
           <span className="text-[10px]">Torneos</span>
+        </button>
+
+        <button
+          className={`flex flex-col items-center text-gray-500 rounded-md p-1 border-transparent focus:border-transparent focus:ring-0 ${window.location.pathname === '/perfil' ? '!text-blue-600' : ''}`}
+          onClick={() => navigate('/perfil', { replace: true })}
+        >
+          <User className="h-5 w-5" />
+          <span className="text-[10px]">Perfil</span>
         </button>
       </nav>
     </div>

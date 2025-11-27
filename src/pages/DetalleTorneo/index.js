@@ -115,7 +115,7 @@ export default function DetalleTorneo() {
 
             {/* Chips de info rápida */}
             <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold">
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold"> 
                     {torneo.modalidad?.nombre}
                 </span>
                 {torneo.premios?.length > 0 && (
@@ -133,10 +133,9 @@ export default function DetalleTorneo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             >
-            <h3 className="text-gray-900 font-semibold text-base">Descripción</h3>
-            <p className="text-gray-700 text-sm leading-relaxed">{torneo.descripcion}</p>
+                <h3 className="text-gray-900 font-semibold text-base">Descripción</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">{torneo.descripcion}</p>
             </motion.div>
-
 
             <hr className="border-gray-200"/>
 

@@ -74,7 +74,6 @@ export default function HomeUsuarioPadel() {
   const { data: homeData, isFetching, isError, refetch } = useQuery({
     queryKey: ['home'],
     queryFn: () => ReservacionesRepository.getHomeData(),
-    staleTime: 1000 * 60 * 2, // 2 minutes
   })
 
   const reservas = useMemo(() => homeData?.reservaciones ?? [], [homeData])

@@ -13,21 +13,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 dayjs.locale('es');
 
-const Progress = ({ value }) => (
-  <div className="w-[85%] mt-6">
-    <p className="text-sm text-gray-600 mb-2">Progreso de ocupación</p>
-    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${value}%` }}
-        transition={{ duration: 0.6 }}
-        className="h-3 bg-[#007aff] rounded-full"
-      />
-    </div>
-    <p className="text-xs text-gray-500 mt-1">{value}% ocupado</p>
-  </div>
-);
-
 const ClimaActual = ({ ciudad }) => {
   const [clima, setClima] = useState(null);
   useEffect(() => {
@@ -42,12 +27,27 @@ const ClimaActual = ({ ciudad }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
-      className="flex items-center gap-2 mt-4 text-gray-700">
+      className="flex items-center justify-center gap-2 mb-2 text-gray-700">
       <CloudSun className="w-5 h-5 text-yellow-500" />
       <span className="text-sm font-medium">{clima.temperature}°C en {ciudad}</span>
     </motion.div>
   );
 };
+
+const Progress = ({ value }) => (
+  <div className="w-full mt-6">
+    <p className="text-sm text-gray-600 mb-2">Progreso de ocupación</p>
+    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${value}%` }}
+        transition={{ duration: 0.6 }}
+        className="h-3 bg-[#007aff] rounded-full"
+      />
+    </div>
+    <p className="text-xs text-gray-500 mt-1">{value}% ocupado</p>
+  </div>
+);
 
 const AvatarStack = ({ usuarios = [], max = 4, ownerId }) => {
   const placeholders = Array.from({ length: Math.max(0, max - usuarios.length) });
@@ -128,12 +128,11 @@ const DetalleReserva = () => {
   const reservaLocation = location.state || {};
   const navigate = useNavigate();
   const [user] = useState(getLocalUser());
-  const reservaId = reservaLocation?.id || searchParams.get('id');
+  const hash = reservaLocation?.hash || searchParams.get('codigo');
 
   const { data: reservaData, isFetching, refetch } = useQuery({
-    queryKey: ['reserva', reservaId],
-    queryFn: () => ReservacionesRepository.getReservacion(reservaId),
-    enabled: !!reservaId,
+    queryKey: ['reserva', hash],
+    queryFn: () => ReservacionesRepository.getReservacion(hash),
   });
 
   const reserva = reservaData?.reservacion || reservaLocation || {};
@@ -145,8 +144,8 @@ const DetalleReserva = () => {
   const userHasReservacion = reserva?.usuarios?.some(u => u.id == user?.id)
 
   const unirseReservacionMutation = useMutation({
-    mutationFn: async (id) => {
-      return await ReservacionesRepository.unirseReservacion(id)
+    mutationFn: async (hash) => {
+      return await ReservacionesRepository.unirseReservacion(hash)
     },
     onSuccess: (data) => {
       if (!data || !data.success) {
@@ -161,12 +160,12 @@ const DetalleReserva = () => {
   })
 
   const handleUnirseReservacion = () => {
-    unirseReservacionMutation.mutate(reserva.id)
+    unirseReservacionMutation.mutate(reserva.hash)
   }
 
   const handleInvitar = () => {
     const url = window.location.origin + window.location.pathname;
-    navigator.clipboard.writeText(`${url}?id=${reserva.id}`);
+    navigator.clipboard.writeText(`${url}?codigo=${reserva.hash}`);
     toast.success("¡Invitación copiada al portapapeles!");
   };
 
@@ -175,7 +174,8 @@ const DetalleReserva = () => {
   }
 
   const handleCompartirWhatsApp = () => {
-    const texto = `Voy a jugar en ${reserva.club?.nombre} el ${dayjs(reserva.fecha_reserva).format('DD/MM/YYYY')} a las ${reserva.hora_inicio_reserva}. ¿Te unes? 😎`;
+    const invitacionUrl = window.location.origin + window.location.pathname + '?codigo=' + reserva.hash;
+    const texto = `Voy a jugar en ${reserva.club?.nombre} el ${dayjs(reserva.fecha_reserva).format('DD/MM/YYYY')} a las ${reserva.hora_inicio_reserva}. ¿Te unes? ${invitacionUrl}`;
     const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
   };
@@ -199,10 +199,11 @@ const DetalleReserva = () => {
       <div className="flex-1 overflow-y-auto px-8 mt-4 text-center">
         <motion.img src={reserva.club?.imagen || '/images/club-placeholder.png'} onError={(e) => (e.target.style.display = 'none')}
           alt="Club" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
-          className="w-full h-48 rounded-2xl object-cover mb-6 shadow-sm" />
+          className="w-full h-48 rounded-2xl object-cover mb-3 shadow-sm" />
+        
 
         <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-gray-900">{reserva.club?.nombre || 'Club desconocido'}</h1>
-        <p className="text-sm text-gray-500 mt-1">{reserva.club?.direccion || 'Dirección no disponible'}</p>
+        <p className="text-sm text-gray-500 mt-1 mb-2">{reserva.club?.direccion || 'Dirección no disponible'}</p>
 
         <ClimaActual ciudad={reserva.club?.nombre || 'Ciudad Obregón'} />
 

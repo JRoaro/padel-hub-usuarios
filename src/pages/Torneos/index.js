@@ -260,13 +260,6 @@ export default function Torneos() {
                     />
                   ))}
 
-                  <motion.div
-                    whileTap={{ scale: 1.1 }}
-                    className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-100 text-gray-500 font-bold cursor-pointer"
-                    onClick={() => alert('Link de invitación copiado')}
-                  >
-                    <Plus className="h-5 w-5" />
-                  </motion.div>
                 </div>
               </div>
 
